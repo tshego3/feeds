@@ -14,7 +14,7 @@
 - Install **Android Studio** (Android emulator): download from developer.android.com, install SDK + emulator images
 - Install **VS Code** extensions:
   - `Swift` (Swift Language Support by Swift Server Work Group)
-  - `LLDB DAP` (debugging — required by the Swift extension)
+  - `LLDB DAP` (debugging - required by the Swift extension)
   - `Android iOS Emulator` (launch emulators from VS Code command palette)
 
 **Swift Toolchain (Open-Source)**
@@ -168,14 +168,14 @@ feeds-swift-app/
 
 **4. Model Layer**
 
-> **C# dev note — key Swift syntax:**
-> - `struct` = value type (same as C#, but used much more often — even for models)
+> **C# dev note - key Swift syntax:**
+> - `struct` = value type (same as C#, but used much more often - even for models)
 > - `let` = `readonly` / immutable field; `var` = mutable field
 > - `String?` = nullable, same `?` syntax as C# nullable reference types
-> - `[T]` = `List<T>` — square brackets are shorthand for `Array<T>`
-> - `: Codable` = conforming to a protocol (C#: implementing an interface). `Codable` ≈ `[JsonSerializable]` — gives auto JSON serialization
+> - `[T]` = `List<T>` - square brackets are shorthand for `Array<T>`
+> - `: Codable` = conforming to a protocol (C#: implementing an interface). `Codable` ≈ `[JsonSerializable]` - gives auto JSON serialization
 > - `: Identifiable` = requires an `id` property (C#: `IIdentifiable<T>`)
-> - `UUID` = `Guid` in C# — `UUID()` ≈ `Guid.NewGuid()`
+> - `UUID` = `Guid` in C# - `UUID()` ≈ `Guid.NewGuid()`
 > - Computed property `var x: T { ... }` = C# `public T X => ...;`
 
 **`RssFeedModel.swift`**
@@ -196,48 +196,48 @@ feeds-swift-app/
 
 **5. Service Layer**
 
-> **C# dev note — async & errors:**
+> **C# dev note - async & errors:**
 > - `async throws` on a function = C# `async Task` that can throw. Swift uses `try await` where C# uses just `await`
-> - `URLSession` = `HttpClient` — the standard HTTP client
-> - `guard let x = ... else { return }` = early exit if nil — C#: `if (x is not Type val) return;`
-> - `enum FeedError: Error` = custom exception types. Swift enums can carry associated data (like discriminated unions) — e.g. `.feedUnavailable(status: 404)` ≈ `new HttpRequestException(404)`
+> - `URLSession` = `HttpClient` - the standard HTTP client
+> - `guard let x = ... else { return }` = early exit if nil - C#: `if (x is not Type val) return;`
+> - `enum FeedError: Error` = custom exception types. Swift enums can carry associated data (like discriminated unions) - e.g. `.feedUnavailable(status: 404)` ≈ `new HttpRequestException(404)`
 > - `try?` = try and return nil on failure (C#: try/catch returning null)
 
 **`FeedService.swift`**
 
-- Use `URLSession` for network requests (C#: `HttpClient`) — native on both iOS and Android via Swift Foundation
+- Use `URLSession` for network requests (C#: `HttpClient`) - native on both iOS and Android via Swift Foundation
 - 3-tier fetch strategy (direct first, proxy fallback):
   1. Direct URL fetch
   2. `https://rss-proxy-api.netlify.app/.netlify/functions/fetch-xml?url=<encoded>`
   3. `https://api.codetabs.com/v1/proxy/?quest=<encoded>`
-- `static func fetchFeed(url: String) async throws -> [FeedItem]` — C#: `public static async Task<List<FeedItem>> FetchFeed(string url)`
+- `static func fetchFeed(url: String) async throws -> [FeedItem]` - C#: `public static async Task<List<FeedItem>> FetchFeed(string url)`
 - All requests use a 15-second timeout (`timeoutInterval = 15`)
 - Custom `FeedError` enum: `.networkError(Error)`, `.parsingError`, `.feedUnavailable(status: Int)`
 
 **`RSSXMLParser.swift`**
 
-- Use `Foundation.XMLParser` (delegate-based, SAX-style) to parse RSS `<item>` elements — C#: similar to `XmlReader` with event callbacks
+- Use `Foundation.XMLParser` (delegate-based, SAX-style) to parse RSS `<item>` elements - C#: similar to `XmlReader` with event callbacks
 - The delegate pattern: a class conforms to `XMLParserDelegate` protocol (C#: implements `IXmlParserHandler`) and receives `didStartElement`/`foundCharacters`/`didEndElement` callbacks
 - Extract: `<title>`, `<link>`, `<description>`, `<pubDate>`, `<media:content url>`, `<enclosure url>`, `<media:thumbnail url>`
 - Map parsed nodes → `[FeedItem]`
 
 **6. View Layer (SwiftUI)**
 
-> **C# dev note — SwiftUI vs Blazor/MAUI/WPF:**
+> **C# dev note - SwiftUI vs Blazor/MAUI/WPF:**
 > - SwiftUI is declarative like XAML, but written in Swift code (no separate markup file)
 > - `struct ContentView: View` = a component. `: View` means it conforms to the `View` protocol (C#: `: IView`)
 > - `var body: some View { ... }` = the render method. `some View` ≈ returning an interface; the compiler infers the concrete type
-> - `@StateObject` = creates and owns a ViewModel instance — C#: `BindingContext = new ViewModel()` in MAUI, or `@inject` in Blazor
-> - `@ObservedObject` = references an existing ViewModel (doesn't own it) — C#: receiving a ViewModel via DI/parameter
-> - `VStack` / `HStack` = vertical/horizontal StackLayout — C#: `<StackPanel Orientation="Vertical/Horizontal">`
-> - `.modifier()` chaining = fluent API — C#: like extension methods or XAML attached properties
+> - `@StateObject` = creates and owns a ViewModel instance - C#: `BindingContext = new ViewModel()` in MAUI, or `@inject` in Blazor
+> - `@ObservedObject` = references an existing ViewModel (doesn't own it) - C#: receiving a ViewModel via DI/parameter
+> - `VStack` / `HStack` = vertical/horizontal StackLayout - C#: `<StackPanel Orientation="Vertical/Horizontal">`
+> - `.modifier()` chaining = fluent API - C#: like extension methods or XAML attached properties
 > - `ForEach(items) { item in ... }` = C#: `@foreach` in Blazor or `ItemsSource` + `DataTemplate` in XAML
-> - `.task { }` runs async work on appear — C#: `OnInitializedAsync()` in Blazor or `OnAppearing` in MAUI
-> - `$0` in closures = shorthand for the first parameter — C#: unnamed lambda param
+> - `.task { }` runs async work on appear - C#: `OnInitializedAsync()` in Blazor or `OnAppearing` in MAUI
+> - `$0` in closures = shorthand for the first parameter - C#: unnamed lambda param
 
 **`ContentView.swift`**
 
-- `@StateObject var viewModel = FeedViewModel()` — C#: `private FeedViewModel vm = new();`
+- `@StateObject var viewModel = FeedViewModel()` - C#: `private FeedViewModel vm = new();`
 - Adaptive layout: desktop uses sidebar `NavigationDrawer`, mobile uses `MobileTabBar` with slide-out drawer
 - Tab navigation via `AppTab` enum: Home, Unread, Bookmarks, Discover, Search, Settings
 - `DashboardView` for feed content with bento grid layout (featured article + grid + compact rows)
@@ -247,7 +247,7 @@ feeds-swift-app/
 
 **`CardView.swift`**
 
-- `AsyncImage(url:)` for feed item images with placeholder — C#: `Image` with `HttpClient`-backed source
+- `AsyncImage(url:)` for feed item images with placeholder - C#: `Image` with `HttpClient`-backed source
 - Desaturated images (`.saturation(0)`) for monochromatic design aesthetic
 - Card variants: `FeaturedArticleCard` (hero + overlay), `ArticleCard` (grid), `CompactArticleRow` (list)
 - Cards display `plainDescription` (HTML-stripped) with `lineLimit` caps
@@ -263,23 +263,23 @@ feeds-swift-app/
 
 **7. ViewModel**
 
-> **C# dev note — MVVM in Swift:**
+> **C# dev note - MVVM in Swift:**
 > - `class FeedViewModel: ObservableObject` = C#: a class implementing `INotifyPropertyChanged` (or using `[ObservableObject]` from CommunityToolkit.Mvvm)
-> - `@Published var` = C#: `[ObservableProperty]` — auto-fires change notifications to the UI
-> - `@MainActor` on the class = ensures all updates run on the UI thread — C#: like wrapping setters in `Dispatcher.Invoke()` or `MainThread.BeginInvokeOnMainThread()`
+> - `@Published var` = C#: `[ObservableProperty]` - auto-fires change notifications to the UI
+> - `@MainActor` on the class = ensures all updates run on the UI thread - C#: like wrapping setters in `Dispatcher.Invoke()` or `MainThread.BeginInvokeOnMainThread()`
 > - Swift enforces this at compile time; C# lets you crash at runtime
-> - `func selectFeed(_ feed:)` — the underscore `_` drops the external parameter label — C#: callers write `selectFeed(myFeed)` not `selectFeed(feed: myFeed)`
+> - `func selectFeed(_ feed:)` - the underscore `_` drops the external parameter label - C#: callers write `selectFeed(myFeed)` not `selectFeed(feed: myFeed)`
 
 **`FeedViewModel.swift`**
 
-- `@Published var feedItems: [FeedItem] = []` — C#: `ObservableCollection<FeedItem>`
+- `@Published var feedItems: [FeedItem] = []` - C#: `ObservableCollection<FeedItem>`
 - `@Published var allFeeds: [RssFeedModel] = []`
-- `@Published var menuItems: [FeedMenuItem] = []` — hierarchical menu structure for sidebar rendering
+- `@Published var menuItems: [FeedMenuItem] = []` - hierarchical menu structure for sidebar rendering
 - `@Published var selectedFeed: RssFeedModel?`
 - `@Published var errorMessage: String?`
 - `@Published var isLoading: Bool = false`
-- `@Published var unreadItems: [FeedItem]` — filtered unread articles
-- `var hasItems: Bool { !feedItems.isEmpty }` — computed property for view rendering
+- `@Published var unreadItems: [FeedItem]` - filtered unread articles
+- `var hasItems: Bool { !feedItems.isEmpty }` - computed property for view rendering
 - `func loadConfig()` - decode feeds.json, build flat `allFeeds` list and hierarchical `menuItems` for grouped navigation
 - `func selectFeed(_ feed: RssFeedModel) async` - set selected, set `isLoading`, call `fetchFeed`, update `feedItems`
 - 3-tier error handling: `FeedError` cases → user-safe messages, `URLError` → network message, catch-all → generic message
@@ -298,7 +298,7 @@ feeds-swift-app/
 
 **iOS (Simulator)**
 
-- Build natively (macOS CLI only — no `.app` bundle):
+- Build natively (macOS CLI only - no `.app` bundle):
   ```bash
   swift build
   ```
@@ -306,7 +306,7 @@ feeds-swift-app/
   ```bash
   rm -rf .build && swift build
   ```
-- Open in Xcode (official — Xcode natively supports SwiftPM packages):
+- Open in Xcode (official - Xcode natively supports SwiftPM packages):
   ```bash
   open Package.swift
   # Select the Feeds scheme → choose a destination → Product → Run (⌘R)
@@ -325,9 +325,9 @@ feeds-swift-app/
 
 > **Note:** SwiftPM `.executableTarget` produces a bare binary, not a `.app` bundle.
 > iOS Simulator requires a `.app` bundle with `Info.plist` and `CFBundleIdentifier`.
-> You can open `Package.swift` directly in Xcode (official method — works for macOS), or use `project.yml` + XcodeGen to generate a proper Xcode project with an iOS app target.
+> You can open `Package.swift` directly in Xcode (official method - works for macOS), or use `project.yml` + XcodeGen to generate a proper Xcode project with an iOS app target.
 
-1. Open in Xcode — choose one:
+1. Open in Xcode - choose one:
    ```bash
    # Official: open the package directly (Xcode auto-creates schemes)
    open Package.swift
@@ -366,20 +366,28 @@ feeds-swift-app/
 
 **Physical Device**
 
-> Requires an Apple Developer account (free or paid). Code signing cannot be bypassed — it is enforced by iOS at the OS level.
+> Requires an Apple Developer account (free or paid). Code signing cannot be bypassed - it is enforced by iOS at the OS level.
+
+0. **Get a free Apple Developer certificate and configure signing**:
+   - Create a free Apple ID at [appleid.apple.com](https://appleid.apple.com) if you don't have one
+   - Open Xcode → **Settings** (⌘,) → **Accounts** tab → click **+** → **Apple ID** → sign in with your Apple ID
+   - Xcode automatically creates a free **Apple Development** signing certificate and registers your account as a Personal Team
+   - No enrollment or payment required — a standard Apple ID is sufficient for on-device development
+   - To verify: select your Apple ID in the Accounts list → click **Manage Certificates** → you should see an "Apple Development" certificate
+   - If the certificate is missing, click **+** in the Manage Certificates sheet → select **Apple Development** → Xcode generates and installs it into your Keychain
+   - **Set up project signing**: generate the Xcode project (`xcodegen generate`) → open `Feeds.xcodeproj` → select the **Feeds** target → **Signing & Capabilities** tab
+   - Check **Automatically manage signing** (should already be enabled — `CODE_SIGN_STYLE: Automatic` is set in `project.yml`)
+   - Set **Team** to your Personal Team (your Apple ID name with "(Personal Team)" suffix)
+   - Set **Bundle Identifier** to a unique reverse-DNS string (e.g. `com.yourname.Feeds`) — free accounts require a globally unique ID
+   - Xcode auto-generates a provisioning profile linking your certificate, bundle ID, and device — no manual profile creation needed
+   - The signing identity (`CODE_SIGN_IDENTITY: "Apple Development"`) and style are pre-configured in `project.yml`, so re-running `xcodegen generate` preserves these settings
 
 1. **Register your device**: Connect via USB → open Xcode → Window → Devices and Simulators → your device appears automatically. Xcode registers the device ID with your Apple Developer account.
 
-2. **Configure signing**: The project already has `CODE_SIGN_STYLE: Automatic` and `CODE_SIGN_IDENTITY: "Apple Development"` set in `project.yml`. After generating the Xcode project (`xcodegen generate`), open it and set your Team:
-   - Open Xcode: `open Feeds.xcodeproj`
-   - Select the **Feeds** target → **Signing & Capabilities** tab
-   - Set **Team** to your Apple Developer account (free Apple ID or paid Developer account)
-   - Xcode automatically creates a provisioning profile and signing certificate
-
-3. **Trust the developer certificate on the device** (free accounts only):
+2. **Trust the developer certificate on the device** (free accounts only):
    - On the device: Settings → General → VPN & Device Management → tap your developer certificate → Trust
 
-4. **Build and deploy**:
+3. **Build and deploy**:
    ```bash
    # Via Xcode: select your device in the destination picker → Product → Run (⌘R)
 
@@ -393,10 +401,10 @@ feeds-swift-app/
    xcrun xctrace list devices
    ```
 
-5. **Wireless debugging** (iOS 14+): In Xcode → Window → Devices and Simulators → select your device → check "Connect via network". After initial USB pairing, deploy wirelessly.
+4. **Wireless debugging** (iOS 14+): In Xcode → Window → Devices and Simulators → select your device → check "Connect via network". After initial USB pairing, deploy wirelessly.
 
-6. **Limitations (free Apple Developer account)**:
-   - Apps expire after 7 days — reinstall to refresh
+5. **Limitations (free Apple Developer account)**:
+   - Apps expire after 7 days - reinstall to refresh
    - Limited to 3 apps installed via free provisioning at a time
    - No App Store distribution, push notifications, or some entitlements
    - Paid account ($99/year) removes these limits and enables App Store publishing
@@ -597,13 +605,13 @@ feeds-swift-app/
 - Tests auto-appear in the VS Code Test Explorer sidebar
 - Run, debug, or run with coverage directly from the Test Explorer
 - Debug a test: set a breakpoint → run with the `Debug Test` profile
-- Coverage: use the `Run Test with Coverage` profile — covered lines show green, missed lines show red
+- Coverage: use the `Run Test with Coverage` profile - covered lines show green, missed lines show red
 
 - **CORS proxies**: still useful on Android (some feeds block non-browser user-agents); on iOS `URLSession` handles redirects natively
 - **App Transport Security (iOS)**: add `NSAppTransportSecurity` → `NSAllowsArbitraryLoads: true` in `Info.plist` for HTTP feeds
 - **Android Network Security**: add `android:usesCleartextTraffic="true"` in `AndroidManifest.xml` or use a network security config
 - **Images**: `AsyncImage` (iOS SwiftUI) / custom image loading on Android side (Coil/Glide in Kotlin shell)
-- **Dark mode**: Three theme modes via Settings — **Light** (standard light appearance), **Dark** (standard iOS/macOS dark), and **Monochrome** (Monolithic Clarity custom design: pure black background, white-only accents, fully desaturated). Theme colors are defined in `Theme.swift` with a `ThemeColors` struct and three presets. All views reference `Theme.xxx` computed properties that resolve from the active preset.
+- **Dark mode**: Three theme modes via Settings - **Light** (standard light appearance), **Dark** (standard iOS/macOS dark), and **Monochrome** (Monolithic Clarity custom design: pure black background, white-only accents, fully desaturated). Theme colors are defined in `Theme.swift` with a `ThemeColors` struct and three presets. All views reference `Theme.xxx` computed properties that resolve from the active preset.
 
 **12. Android App Packaging (Beyond CLI)**
 
@@ -629,7 +637,7 @@ feeds-swift-app/
 | `import Foundation` | `using System;` | Import a module (namespace) |
 | `let x = 5` | `readonly int x = 5;` | Immutable binding |
 | `var x = 5` | `int x = 5;` | Mutable variable |
-| `String?` | `string?` | Nullable — same syntax |
+| `String?` | `string?` | Nullable - same syntax |
 | `[T]` | `List<T>` | Array/list of T |
 | `[String: Any]` | `Dictionary<string, object>` | Dictionary |
 | `struct` | `struct` (value type) | Used far more often in Swift |
@@ -638,7 +646,7 @@ feeds-swift-app/
 | `: Codable` | `[JsonSerializable]` | Auto JSON encode/decode |
 | `: Identifiable` | `: IIdentifiable<T>` | Requires `id` property |
 | `UUID()` | `Guid.NewGuid()` | New unique ID |
-| `URL(string:)` | `new Uri(string)` | URL/URI — Swift returns nil if invalid |
+| `URL(string:)` | `new Uri(string)` | URL/URI - Swift returns nil if invalid |
 | `guard let x = y else { return }` | `if (y is not T x) return;` | Unwrap-or-exit |
 | `if let x = optional { }` | `if (optional is T x) { }` | Unwrap optional |
 | `try await fetch()` | `await FetchAsync()` | Swift requires explicit `try` |

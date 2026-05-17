@@ -150,7 +150,8 @@ enum Theme {
         switch theme {
         case "Light": current = .light
         case "Dark": current = .dark
-        default: current = .monochrome
+        case "Monochrome": current = .monochrome
+        default: current = .dark
         }
     }
 

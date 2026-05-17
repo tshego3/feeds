@@ -17,10 +17,40 @@ struct FeedsApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            AppRootView()
                 .environmentObject(settings)
                 .environmentObject(bookmarkViewModel)
-                .preferredColorScheme(settings.selectedTheme == "Light" ? .light : .dark)
         }
+    }
+}
+
+/// Wrapper view that syncs the device color scheme with the theme engine in Auto mode.
+private struct AppRootView: View {
+    @EnvironmentObject private var settings: SettingsViewModel
+    @Environment(\.colorScheme) private var systemColorScheme
+
+    private var preferredScheme: ColorScheme? {
+        switch settings.selectedTheme {
+        case "Auto": return nil
+        case "Light": return .light
+        default: return .dark
+        }
+    }
+
+    var body: some View {
+        ContentView()
+            .preferredColorScheme(preferredScheme)
+            .onChange(of: systemColorScheme) { _, newScheme in
+                guard settings.selectedTheme == "Auto" else { return }
+                settings.applyAutoTheme(systemIsDark: newScheme == .dark)
+            }
+            .onChange(of: settings.selectedTheme) { _, newTheme in
+                guard newTheme == "Auto" else { return }
+                settings.applyAutoTheme(systemIsDark: systemColorScheme == .dark)
+            }
+            .onAppear {
+                guard settings.selectedTheme == "Auto" else { return }
+                settings.applyAutoTheme(systemIsDark: systemColorScheme == .dark)
+            }
     }
 }

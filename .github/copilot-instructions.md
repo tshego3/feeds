@@ -105,6 +105,7 @@ These rules are mandatory for all feature work, bug fixes, and refactors in this
 14. Prefer low-boilerplate implementations: small functions, small diffs, and direct control flow.
 15. **If hardcoded mock/placeholder data is found in views, treat it as temporary scaffolding and replace it before completion** — use parameterized bindings, service calls, or empty-state defaults. If backend wiring is pending, use clearly marked `// TODO:` stubs that return empty arrays.
 16. **Avoid unnecessary `if` statements** — prefer ternary expressions, `guard`, `if let`, nil-coalescing (`??`), and early returns over redundant conditional blocks.
+17. **Code is liability, not an asset.** Every line added must justify its existence. Prefer deleting code over adding it, and always pursue the smallest diff that solves the problem. If a feature can be achieved by removing or simplifying existing code instead of writing new code, do that.
 
 ## 12) Architecture Layers & Responsibilities
 

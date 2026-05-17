@@ -85,14 +85,94 @@ struct SettingsView: View {
 
     private var appearanceSection: some View {
         settingsSection(title: "Appearance") {
-            HStack(spacing: 16) {
-                themeOption("Light", colors: ThemeColors.light)
-                themeOption("Dark", colors: ThemeColors.dark)
-                themeOption("Monochrome", colors: ThemeColors.monochrome)
+            VStack(spacing: 16) {
+                HStack(spacing: 16) {
+                    autoThemeOption
+                    themeOption("Light", colors: ThemeColors.light)
+                    themeOption("Dark", colors: ThemeColors.dark)
+                    themeOption("Monochrome", colors: ThemeColors.monochrome)
+                }
+
+                Button {
+                    settings.cycleAppearance()
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: appearanceCycleIcon)
+                            .font(.system(size: 14))
+                        Text(settings.selectedTheme)
+                            .labelSmall()
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(Theme.surfaceContainerHigh)
+                    .foregroundColor(Theme.onSurface)
+                    .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
             }
             .padding(16)
             .glassPanel()
         }
+    }
+
+    private var appearanceCycleIcon: String {
+        switch settings.selectedTheme {
+        case "Auto": return "circle.lefthalf.filled"
+        case "Light": return "sun.max.fill"
+        case "Dark": return "moon.fill"
+        default: return "circle.fill"
+        }
+    }
+
+    private var autoThemeOption: some View {
+        Button {
+            settings.selectedTheme = "Auto"
+        } label: {
+            VStack(spacing: 8) {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(
+                        LinearGradient(
+                            colors: [ThemeColors.light.background, ThemeColors.dark.background],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .aspectRatio(16/9, contentMode: .fit)
+                    .overlay(
+                        VStack(spacing: 4) {
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [ThemeColors.light.primary, ThemeColors.dark.primary],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                                .frame(width: 30, height: 4)
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [ThemeColors.light.onSurfaceVariant, ThemeColors.dark.onSurfaceVariant],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                                .frame(width: 22, height: 3)
+                        }
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(
+                                settings.selectedTheme == "Auto" ? Theme.primary : Color.clear,
+                                lineWidth: 2
+                            )
+                    )
+                Text("Auto")
+                    .labelXSmall()
+                    .foregroundColor(settings.selectedTheme == "Auto" ? Theme.primary : Theme.onSurfaceVariant)
+            }
+        }
+        .buttonStyle(.plain)
     }
 
     private func themeOption(_ name: String, colors: ThemeColors) -> some View {

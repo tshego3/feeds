@@ -1,0 +1,402 @@
+import SwiftUI
+
+/// Dashboard view — Bento-grid feed layout with featured article and sidebar cards.
+/// Matches the dashboard/code.html design.
+struct DashboardView: View {
+    @ObservedObject var viewModel: FeedViewModel
+    var filterUnreadOnly: Bool = false
+
+    private var displayItems: [FeedItem] {
+        filterUnreadOnly ? viewModel.unreadItems : viewModel.feedItems
+    }
+
+    private var hasDisplayItems: Bool { !displayItems.isEmpty }
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                headerSection
+                contentSection
+            }
+            .padding(.bottom, 80)
+        }
+        .background(Theme.background)
+    }
+
+    // MARK: - Header
+
+    private var headerTitle: String {
+        guard !filterUnreadOnly else { return "Unread" }
+        return viewModel.selectedFeed?.title ?? ""
+    }
+
+    private var headerSubtitle: String {
+        if filterUnreadOnly {
+            return "\(displayItems.count) UNREAD ARTICLES"
+        }
+        return "\(displayItems.count) ARTICLES"
+    }
+
+    private var headerSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(headerTitle)
+                .headlineLarge()
+                .foregroundColor(Theme.primary)
+
+            Text(headerSubtitle)
+                .labelXSmall()
+                .foregroundColor(Theme.onSurfaceVariant)
+                .textCase(.uppercase)
+        }
+        .padding(.horizontal, 24)
+        .padding(.top, 32)
+        .padding(.bottom, 32)
+    }
+
+    // MARK: - Content
+
+    private var contentSection: some View {
+        Group {
+            if viewModel.isLoading {
+                ProgressView()
+                    .frame(maxWidth: .infinity, minHeight: 300)
+            } else if let error = viewModel.errorMessage {
+                errorView(error)
+            } else if hasDisplayItems {
+                bentoGrid
+            } else {
+                emptyState
+            }
+        }
+    }
+
+    // MARK: - Bento Grid
+
+    private var bentoGrid: some View {
+        let items = displayItems
+        return LazyVStack(spacing: 24) {
+            // Featured article (first item)
+            if let featured = items.first {
+                NavigationLink(value: featured) {
+                    FeaturedArticleCard(item: featured)
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal, 24)
+            }
+
+            // Secondary row — 2-up or 3-up grid
+            if items.count > 1 {
+                let secondary = Array(items.dropFirst().prefix(6))
+                LazyVGrid(columns: [
+                    GridItem(.flexible(), spacing: 16),
+                    GridItem(.flexible(), spacing: 16),
+                ], spacing: 16) {
+                    ForEach(secondary) { item in
+                        NavigationLink(value: item) {
+                            ArticleCard(item: item)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .frame(maxWidth: 720)
+                .padding(.horizontal, 24)
+            }
+
+            // Remaining items in single column
+            if items.count > 7 {
+                ForEach(Array(items.dropFirst(7))) { item in
+                    NavigationLink(value: item) {
+                        CompactArticleRow(item: item)
+                    }
+                    .buttonStyle(.plain)
+                    .frame(maxWidth: 720)
+                    .padding(.horizontal, 24)
+                }
+            }
+        }
+    }
+
+    // MARK: - States
+
+    private func errorView(_ message: String) -> some View {
+        VStack(spacing: 16) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 40))
+                .foregroundColor(Theme.onSurfaceVariant)
+            Text(message)
+                .bodyMedium()
+                .foregroundColor(Theme.onSurfaceVariant)
+                .multilineTextAlignment(.center)
+            Button("Try Again") {
+                Task {
+                    if let feed = viewModel.selectedFeed {
+                        await viewModel.selectFeed(feed)
+                    }
+                }
+            }
+            .padding(.horizontal, 24)
+            .padding(.vertical, 10)
+            .background(Theme.primary)
+            .foregroundColor(Theme.onPrimary)
+            .clipShape(Capsule())
+            .labelSmall()
+        }
+        .frame(maxWidth: .infinity, minHeight: 300)
+    }
+
+    private var emptyState: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "tray")
+                .font(.system(size: 40))
+                .foregroundColor(Theme.onSurfaceVariant)
+            Text("No articles found.")
+                .headlineMedium()
+                .foregroundColor(Theme.primary)
+            Text(filterUnreadOnly
+                ? "You're all caught up! No unread articles."
+                : "Select a feed from the sidebar to get started.")
+                .bodyMedium()
+                .foregroundColor(Theme.onSurfaceVariant)
+        }
+        .frame(maxWidth: .infinity, minHeight: 300)
+    }
+}
+
+// MARK: - Featured Article Card
+
+struct FeaturedArticleCard: View {
+    let item: FeedItem
+    @EnvironmentObject private var bookmarks: BookmarkViewModel
+
+    private var hasImage: Bool { item.displayImage != nil }
+
+    var body: some View {
+        ZStack(alignment: .bottomLeading) {
+            // Image
+            if let url = item.displayImage {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    case .failure:
+                        fallbackImage
+                    case .empty:
+                        ProgressView()
+                            .frame(height: 380)
+                    @unknown default:
+                        EmptyView()
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: 380)
+                .clipped()
+                .saturation(0)
+            } else {
+                Theme.surfaceContainerLow
+            }
+
+            // Gradient overlay
+            LinearGradient(
+                colors: [Theme.background, Theme.background.opacity(0.4), .clear],
+                startPoint: .bottom,
+                endPoint: .top
+            )
+
+            // Content overlay
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 12) {
+                    Circle()
+                        .fill(Theme.primary)
+                        .frame(width: 8, height: 8)
+                    Text(Helpers.formatDate(item.pubDate))
+                        .labelXSmall()
+                        .foregroundColor(Theme.onSurfaceVariant)
+                }
+
+                Text(item.title)
+                    .headlineLarge()
+                    .foregroundColor(Theme.primary)
+                    .lineLimit(3)
+
+                Text(item.plainDescription)
+                    .bodyLarge()
+                    .foregroundColor(Theme.onSurfaceVariant)
+                    .lineLimit(2)
+
+                HStack {
+                    if let url = URL(string: item.link) {
+                        Link(destination: url) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "sparkles")
+                                    .font(.system(size: 14))
+                                Text("Read Article")
+                                    .labelSmall()
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                            .background(Theme.primary)
+                            .foregroundColor(Theme.onPrimary)
+                            .clipShape(Capsule())
+                        }
+                    }
+                    Spacer()
+                    Button { bookmarks.toggle(item) } label: {
+                        Image(systemName: bookmarks.isBookmarked(item) ? "bookmark.fill" : "bookmark")
+                            .foregroundColor(bookmarks.isBookmarked(item) ? Theme.primary : Theme.onSurfaceVariant)
+                    }
+                    .buttonStyle(.plain)
+                    Button { } label: {
+                        Image(systemName: "square.and.arrow.up")
+                            .foregroundColor(Theme.onSurfaceVariant)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(24)
+        }
+        .frame(height: hasImage ? 380 : nil)
+        .frame(minHeight: hasImage ? nil : 200)
+        .frame(maxWidth: 720)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Theme.outlineVariant, lineWidth: 1)
+        )
+    }
+
+    private var fallbackImage: some View {
+        Rectangle()
+            .fill(Theme.surfaceContainerLow)
+            .frame(maxWidth: .infinity)
+            .frame(height: 380)
+    }
+}
+
+// MARK: - Article Card
+
+struct ArticleCard: View {
+    let item: FeedItem
+    @EnvironmentObject private var bookmarks: BookmarkViewModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // Thumbnail
+            if let url = item.displayImage {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(height: 140)
+                            .frame(maxWidth: .infinity)
+                            .contentShape(Rectangle())
+                            .clipped()
+                            .saturation(0)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                    default:
+                        EmptyView()
+                    }
+                }
+                .frame(maxWidth: .infinity)
+            }
+
+            Text(Helpers.formatDate(item.pubDate))
+                .labelXSmall()
+                .foregroundColor(Theme.onSurfaceVariant)
+                .textCase(.uppercase)
+
+            Text(item.title)
+                .headlineMedium()
+                .foregroundColor(Theme.primary)
+                .lineLimit(2)
+
+            Text(item.plainDescription)
+                .bodyMedium()
+                .foregroundColor(Theme.onSurfaceVariant)
+                .lineLimit(2)
+
+            HStack {
+                Button { } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 12))
+                        Text("Summary")
+                            .labelXSmall()
+                    }
+                    .foregroundColor(Theme.onSurfaceVariant)
+                }
+                .buttonStyle(.plain)
+
+                Spacer()
+
+                Button { bookmarks.toggle(item) } label: {
+                    Image(systemName: bookmarks.isBookmarked(item) ? "bookmark.fill" : "bookmark")
+                        .font(.system(size: 16))
+                        .foregroundColor(bookmarks.isBookmarked(item) ? Theme.primary : Theme.onSurfaceVariant)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(20)
+        .background(Theme.surfaceContainerLow)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Theme.outlineVariant, lineWidth: 1)
+        )
+    }
+}
+
+// MARK: - Compact Article Row
+
+struct CompactArticleRow: View {
+    let item: FeedItem
+
+    var body: some View {
+        HStack(spacing: 16) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(Helpers.formatDate(item.pubDate))
+                    .labelXSmall()
+                    .foregroundColor(Theme.onSurfaceVariant)
+
+                Text(item.title)
+                    .headlineMedium()
+                    .foregroundColor(Theme.primary)
+                    .lineLimit(2)
+
+                Text(item.plainDescription)
+                    .bodyMedium()
+                    .foregroundColor(Theme.onSurfaceVariant)
+                    .lineLimit(1)
+            }
+
+            Spacer()
+
+            if let url = item.displayImage {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 80, height: 60)
+                            .saturation(0)
+                            .opacity(0.7)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                    default:
+                        EmptyView()
+                    }
+                }
+            }
+        }
+        .padding(16)
+        .background(Theme.surfaceContainerLow)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Theme.outlineVariant.opacity(0.3), lineWidth: 1)
+        )
+    }
+}

@@ -22,6 +22,8 @@ targets:
       INFOPLIST_KEY_CFBundleDisplayName: Feeds
       PRODUCT_BUNDLE_IDENTIFIER: com.feeds.Feeds
       SWIFT_STRICT_CONCURRENCY: complete
+      CODE_SIGN_STYLE: Automatic
+      CODE_SIGN_IDENTITY: "Apple Development"
   FeedsTests:
     type: bundle.unit-test
     platform: iOS

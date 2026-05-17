@@ -128,21 +128,39 @@ feeds-swift-app/
 │   └── Feeds/
 │       ├── Feeds.swift
 │       ├── Models/
+│       │   ├── AppTab.swift
+│       │   ├── DiscoverFeed.swift
+│       │   ├── FeedItem.swift
 │       │   ├── RssFeedModel.swift
-│       │   └── FeedItem.swift
+│       │   └── SavedArticle.swift
 │       ├── Views/
 │       │   ├── ContentView.swift
 │       │   ├── CardView.swift
-│       │   └── FeedSidebar.swift
+│       │   ├── DashboardView.swift
+│       │   ├── ArticleReadingView.swift
+│       │   ├── ExploreView.swift
+│       │   ├── HTMLContentView.swift
+│       │   ├── SearchView.swift
+│       │   ├── SavedArticlesView.swift
+│       │   ├── SettingsView.swift
+│       │   ├── FeedSidebar.swift
+│       │   ├── NavigationDrawer.swift
+│       │   ├── MobileTabBar.swift
+│       │   ├── ShareSheet.swift
+│       │   └── Theme.swift
 │       ├── ViewModels/
-│       │   └── FeedViewModel.swift
+│       │   ├── FeedViewModel.swift
+│       │   ├── ArticleReadingViewModel.swift
+│       │   ├── BookmarkViewModel.swift
+│       │   └── SettingsViewModel.swift
 │       ├── Services/
 │       │   ├── FeedService.swift
 │       │   └── RSSXMLParser.swift
 │       ├── Utils/
 │       │   └── Helpers.swift
 │       └── Resources/
-│           └── feeds.json
+│           ├── feeds.json
+│           └── logo.svg
 ├── Tests/
 │   └── FeedsTests/
 │       └── FeedsTests.swift
@@ -173,6 +191,7 @@ feeds-swift-app/
 
 - `struct FeedItem: Identifiable` - `id: UUID, title: String, link: String, description: String, pubDate: String, imageURLs: [String?]`
 - Computed property `displayImage: URL?` - returns first non-nil image URL from the array
+- Computed property `plainDescription: String` - strips HTML tags from description for clean card previews (uses `Helpers.stripHTML`)
   <!-- URL in Swift = Uri in C#. compactMap removes nils ≈ .Where(x => x != null) -->
 
 **5. Service Layer**
@@ -219,22 +238,20 @@ feeds-swift-app/
 **`ContentView.swift`**
 
 - `@StateObject var viewModel = FeedViewModel()` — C#: `private FeedViewModel vm = new();`
-- `NavigationSplitView` with sidebar + detail pane (≈ C# `SplitView` / Master-Detail):
-  - **Sidebar**: `FeedSidebar` with grouped feed list and `DisclosureGroup` expandable sections
-  - **Detail**: 4-branch rendering pattern:
-    1. `if viewModel.isLoading` → `ProgressView()`
-    2. `else if let error = viewModel.errorMessage` → error state with retry button
-    3. `else if viewModel.hasItems` → `ScrollView` with `LazyVGrid(columns: adaptive(minimum: 300))`
-    4. `else` → empty state with guidance text
-- `@State columnVisibility` controls sidebar/detail visibility — collapses to detail-only on compact devices after feed selection
-- On appear (`.task`): load feeds.json → select the first feed → fetch + parse
+- Adaptive layout: desktop uses sidebar `NavigationDrawer`, mobile uses `MobileTabBar` with slide-out drawer
+- Tab navigation via `AppTab` enum: Home, Unread, Bookmarks, Discover, Search, Settings
+- `DashboardView` for feed content with bento grid layout (featured article + grid + compact rows)
+- `ArticleReadingView` for full article reading with HTML rendering support via `HTMLContentView` (WKWebView)
+- `HTMLContentView` adapts its CSS to match the active theme (light/dark/monochrome)
+- Dependencies injected via `@EnvironmentObject`: `BookmarkViewModel`, `SettingsViewModel`
 
 **`CardView.swift`**
 
 - `AsyncImage(url:)` for feed item images with placeholder — C#: `Image` with `HttpClient`-backed source
-- `VStack`: image → title (`.font(.headline)`) → description (`.font(.body)`) → `HStack` with "View" `Link` button + date `Text`
-- `.shadow(radius: 2)` + `.cornerRadius(8)` for card styling — C#: `BoxShadow` + `CornerRadius` in WPF/MAUI
-- Cross-platform background color via `#if os(macOS)` / `#else` conditional compilation (`NSColor.windowBackgroundColor` vs `UIColor.systemBackground`)
+- Desaturated images (`.saturation(0)`) for monochromatic design aesthetic
+- Card variants: `FeaturedArticleCard` (hero + overlay), `ArticleCard` (grid), `CompactArticleRow` (list)
+- Cards display `plainDescription` (HTML-stripped) with `lineLimit` caps
+- `.clipShape(RoundedRectangle)` + `.overlay(stroke)` for card styling
 
 **`FeedSidebar.swift`**
 
@@ -261,7 +278,8 @@ feeds-swift-app/
 - `@Published var selectedFeed: RssFeedModel?`
 - `@Published var errorMessage: String?`
 - `@Published var isLoading: Bool = false`
-- `var hasItems: Bool { !feedItems.isEmpty }` — computed property for 4-branch view rendering
+- `@Published var unreadItems: [FeedItem]` — filtered unread articles
+- `var hasItems: Bool { !feedItems.isEmpty }` — computed property for view rendering
 - `func loadConfig()` - decode feeds.json, build flat `allFeeds` list and hierarchical `menuItems` for grouped navigation
 - `func selectFeed(_ feed: RssFeedModel) async` - set selected, set `isLoading`, call `fetchFeed`, update `feedItems`
 - 3-tier error handling: `FeedError` cases → user-safe messages, `URLError` → network message, catch-all → generic message
@@ -273,6 +291,7 @@ feeds-swift-app/
 **`Helpers.swift`**
 
 - `static func formatDate(_ dateString: String) -> String` - parse RSS date format (`EEE, dd MMM yyyy HH:mm:ss Z`) via `DateFormatter`
+- `static func stripHTML(_ html: String) -> String` - strips HTML tags and decodes common HTML entities for plain-text preview display
   <!-- C#: public static string FormatDate(string dateString) => DateTime.TryParseExact(...) -->
 
 **9. Building & Running**
@@ -282,6 +301,10 @@ feeds-swift-app/
 - Build natively (macOS CLI only — no `.app` bundle):
   ```bash
   swift build
+  ```
+- Clean build (use when switching branches, renaming the project folder, or after toolchain updates):
+  ```bash
+  rm -rf .build && swift build
   ```
 - Open in Xcode (official — Xcode natively supports SwiftPM packages):
   ```bash
@@ -343,14 +366,15 @@ feeds-swift-app/
 
 **Physical Device**
 
-> Requires an Apple Developer account (free or paid) and a provisioning profile.
+> Requires an Apple Developer account (free or paid). Code signing cannot be bypassed — it is enforced by iOS at the OS level.
 
 1. **Register your device**: Connect via USB → open Xcode → Window → Devices and Simulators → your device appears automatically. Xcode registers the device ID with your Apple Developer account.
 
-2. **Configure signing**: In Xcode, select the Feeds target → Signing & Capabilities tab:
-   - Set **Team** to your Apple Developer account
-   - Set **Bundle Identifier** to a unique reverse-DNS name (e.g. `com.yourname.feeds`)
-   - Enable **Automatically manage signing** — Xcode creates a provisioning profile and signing certificate
+2. **Configure signing**: The project already has `CODE_SIGN_STYLE: Automatic` and `CODE_SIGN_IDENTITY: "Apple Development"` set in `project.yml`. After generating the Xcode project (`xcodegen generate`), open it and set your Team:
+   - Open Xcode: `open Feeds.xcodeproj`
+   - Select the **Feeds** target → **Signing & Capabilities** tab
+   - Set **Team** to your Apple Developer account (free Apple ID or paid Developer account)
+   - Xcode automatically creates a provisioning profile and signing certificate
 
 3. **Trust the developer certificate on the device** (free accounts only):
    - On the device: Settings → General → VPN & Device Management → tap your developer certificate → Trust
@@ -579,7 +603,7 @@ feeds-swift-app/
 - **App Transport Security (iOS)**: add `NSAppTransportSecurity` → `NSAllowsArbitraryLoads: true` in `Info.plist` for HTTP feeds
 - **Android Network Security**: add `android:usesCleartextTraffic="true"` in `AndroidManifest.xml` or use a network security config
 - **Images**: `AsyncImage` (iOS SwiftUI) / custom image loading on Android side (Coil/Glide in Kotlin shell)
-- **Dark mode**: SwiftUI respects system theme automatically; Android Kotlin shell should follow Material You theming
+- **Dark mode**: Three theme modes via Settings — **Light** (standard light appearance), **Dark** (standard iOS/macOS dark), and **Monochrome** (Monolithic Clarity custom design: pure black background, white-only accents, fully desaturated). Theme colors are defined in `Theme.swift` with a `ThemeColors` struct and three presets. All views reference `Theme.xxx` computed properties that resolve from the active preset.
 
 **12. Android App Packaging (Beyond CLI)**
 

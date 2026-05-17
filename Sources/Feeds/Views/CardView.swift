@@ -54,7 +54,7 @@ struct CardView: View {
             Text(item.description)
                 .font(.body)            // C#: FontSize = 14
                 .lineLimit(3)
-                .foregroundColor(.secondary) // C#: TextColor = Colors.Gray
+                .foregroundColor(Theme.onSurfaceVariant)
 
             // HStack = horizontal StackLayout. Children laid out left to right.
             HStack {
@@ -70,15 +70,11 @@ struct CardView: View {
 
                 Text(Helpers.formatDate(item.pubDate))
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Theme.onSurfaceVariant)
             }
         }
         .padding()                      // Inner padding — C#: Padding = new Thickness(16)
-        #if os(macOS)
-        .background(Color(NSColor.windowBackgroundColor))
-        #else
-        .background(Color(UIColor.systemBackground))
-        #endif
+        .background(Theme.surface)
         .cornerRadius(8)               // C#: CornerRadius = 8 (on a Frame/Border)
         .shadow(radius: 2)             // C#: like a BoxShadow or elevation effect
     }

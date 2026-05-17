@@ -12,12 +12,15 @@ import SwiftUI
 // Swift protocols = C# interfaces — they define a contract.
 @main
 struct FeedsApp: App {
-    // "var body: some Scene" is a computed property (C# equivalent: public Scene Body { get { ... } }).
-    // "some Scene" ≈ returning an interface type (like IScene) — the compiler infers the concrete type.
+    @StateObject private var settings = SettingsViewModel()
+    @StateObject private var bookmarkViewModel = BookmarkViewModel()
+
     var body: some Scene {
         WindowGroup {
-            // ContentView() — instantiating a struct (no "new" keyword needed in Swift).
             ContentView()
+                .environmentObject(settings)
+                .environmentObject(bookmarkViewModel)
+                .preferredColorScheme(settings.selectedTheme == "Light" ? .light : .dark)
         }
     }
 }

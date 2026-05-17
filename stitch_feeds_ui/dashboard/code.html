@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed": "#eae1dd",
+                    "on-secondary-fixed-variant": "#474747",
+                    "on-primary-fixed": "#1a1c1c",
+                    "on-primary-fixed-variant": "#454747",
+                    "surface-container-high": "#2a2a2a",
+                    "on-secondary-container": "#b6b5b4",
+                    "on-error-container": "#ffdad6",
+                    "error-container": "#93000a",
+                    "surface-dim": "#131313",
+                    "surface-bright": "#393939",
+                    "on-secondary": "#303030",
+                    "primary-fixed": "#e2e2e2",
+                    "tertiary-fixed-dim": "#cec5c1",
+                    "primary-fixed-dim": "#c6c6c7",
+                    "tertiary-container": "#eae1dd",
+                    "surface": "#131313",
+                    "secondary": "#c8c6c6",
+                    "background": "#131313",
+                    "on-error": "#690005",
+                    "inverse-primary": "#5d5f5f",
+                    "on-tertiary-fixed": "#1f1b19",
+                    "on-secondary-fixed": "#1b1c1c",
+                    "tertiary": "#ffffff",
+                    "surface-tint": "#c6c6c7",
+                    "on-surface": "#e5e2e1",
+                    "on-primary": "#2f3131",
+                    "inverse-surface": "#e5e2e1",
+                    "surface-container": "#201f1f",
+                    "surface-container-lowest": "#0e0e0e",
+                    "on-tertiary-fixed-variant": "#4b4643",
+                    "on-background": "#e5e2e1",
+                    "secondary-fixed": "#e4e2e1",
+                    "primary": "#ffffff",
+                    "secondary-container": "#474747",
+                    "on-tertiary": "#342f2d",
+                    "surface-container-low": "#1c1b1b",
+                    "on-primary-container": "#636565",
+                    "on-tertiary-container": "#696360",
+                    "on-surface-variant": "#c4c7c8",
+                    "primary-container": "#e2e2e2",
+                    "outline": "#8e9192",
+                    "outline-variant": "#444748",
+                    "surface-variant": "#353534",
+                    "error": "#ffb4ab",
+                    "surface-container-highest": "#353534",
+                    "inverse-on-surface": "#313030",
+                    "secondary-fixed-dim": "#c8c6c6"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "section-gap": "48px",
+                    "gutter": "16px",
+                    "container-padding": "24px",
+                    "stack-gap": "12px",
+                    "unit": "4px"
+            },
+            "fontFamily": {
+                    "label-sm": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-xs": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-md": ["Inter"]
+            },
+            "fontSize": {
+                    "label-sm": ["13px", {"lineHeight": "1", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                    "body-lg": ["17px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}],
+                    "label-xs": ["11px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "body-md": ["15px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}],
+                    "headline-md": ["20px", {"lineHeight": "1.4", "letterSpacing": "-0.01em", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #121212;
+            color: #e5e2e1;
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-overlay {
+            background: rgba(28, 28, 28, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid #2d2d2d;
+        }
+        .article-card:hover {
+            background-color: #1c1c1c;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background antialiased scrollbar-hide">
+<!-- Mobile Top Bar -->
+<header class="flex md:hidden justify-between items-center px-4 py-3 w-full fixed top-0 z-40 bg-surface/80 dark:bg-surface/80 backdrop-blur-xl border-b border-outline-variant">
+<div class="flex items-center gap-4">
+<button class="hover:opacity-80 transition-opacity active:scale-95 transition-transform text-primary">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="font-headline-md-mobile text-headline-md-mobile font-bold tracking-tighter text-primary">feeds</h1>
+</div>
+<button class="hover:opacity-80 transition-opacity active:scale-95 transition-transform text-primary">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+</header>
+<!-- Navigation Drawer (Desktop) -->
+<nav class="hidden md:flex flex-col h-screen fixed left-0 top-0 overflow-y-auto h-full w-72 bg-surface-container dark:bg-surface-container border-r border-outline-variant">
+<div class="p-8">
+<span class="font-headline-lg text-headline-lg font-bold tracking-tighter text-primary dark:text-primary">feeds</span>
+</div>
+<div class="flex flex-col mt-4">
+<!-- Active Tab: All Feeds -->
+<a class="flex items-center gap-4 px-8 py-3 bg-secondary-container dark:bg-secondary-container text-primary dark:text-primary border-l-2 border-primary hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200 Active: opacity-90 transition-all scale-[0.99]" href="#">
+<span class="material-symbols-outlined" data-icon="rss_feed">rss_feed</span>
+<span class="font-headline-md text-headline-md">All Feeds</span>
+</a>
+<a class="flex items-center gap-4 px-8 py-3 text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="mark_as_unread">mark_as_unread</span>
+<span class="font-headline-md text-headline-md">Unread</span>
+</a>
+<a class="flex items-center gap-4 px-8 py-3 text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="bookmark">bookmark</span>
+<span class="font-headline-md text-headline-md">Bookmarks</span>
+</a>
+<a class="flex items-center gap-4 px-8 py-3 text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="explore">explore</span>
+<span class="font-headline-md text-headline-md">Discover</span>
+</a>
+<div class="mt-auto border-t border-outline-variant pt-4 mb-8">
+<a class="flex items-center gap-4 px-8 py-3 text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-headline-md text-headline-md">Settings</span>
+</a>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="md:ml-72 min-h-screen pt-16 md:pt-0 pb-20 md:pb-0 bg-background">
+<!-- Feed Header -->
+<section class="max-w-[1200px] mx-auto px-6 py-8 md:py-12">
+<div class="flex justify-between items-end mb-12">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-primary tracking-tight">All Feeds</h2>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-2 uppercase tracking-widest">Latest updates from 24 sources</p>
+</div>
+<div class="hidden md:flex gap-4">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="filter_list">filter_list</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="refresh">refresh</span>
+</button>
+</div>
+</div>
+<!-- Bento Grid Article Feed -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Featured Article (Span 8) -->
+<article class="lg:col-span-8 group cursor-pointer">
+<div class="relative overflow-hidden rounded-xl bg-surface-container-low border border-outline-variant hover:border-outline transition-all duration-300">
+<img class="w-full h-96 object-cover opacity-80 group-hover:opacity-100 transition-opacity grayscale hover:grayscale-0 duration-500" data-alt="A highly cinematic shot of a sleek humanoid robot sitting in a dimly lit, minimalist library, illuminated by a single soft overhead light source. The color palette is strictly monochromatic, featuring deep charcoal shadows and crisp white highlights. The atmosphere is quiet, contemplative, and technologically sophisticated, reflecting a modern AI aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuQlEqyMtRQcDB29iRM08QrZxe2vVFAiFkcMLcFtKBG3sz8nFRyvGjjIpdoU6kdiVdxLTpHKr8EaICgbpX2zNByyojHYGQDf1pPmes3sALN4vObAMklKjqQ2Lt1qMenOZomA3f-p4upe6pZjssYCG_ttXFL_ikaLyHPBbz6BfOnY_aQDS9nRrPnlRwf-VzGbtp6n-llFynaOzLy3l2-tuSPW-UXCyEP5qmEimA7IBbYnE2zvwg4EH92WC1u23-uPhpe5BtTqYpVSeB"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
+<div class="absolute bottom-0 p-8 w-full">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+<span class="font-label-xs text-label-xs text-primary bg-secondary-container px-2 py-1 rounded">Technology</span>
+<span class="font-label-xs text-label-xs text-on-surface-variant">4m ago • Wired</span>
+</div>
+<h3 class="font-headline-lg text-headline-lg text-primary mb-4 leading-tight group-hover:underline decoration-1 underline-offset-4">The Architectural Singularity: How Generative AI is Reimagining Urban Sprawl</h3>
+<p class="font-body-lg text-body-lg text-on-surface-variant line-clamp-2 max-w-2xl mb-6">As cities become denser and more complex, AI-driven design tools are proposing radical new structural forms that prioritize carbon efficiency over traditional aesthetics.</p>
+<div class="flex items-center justify-between">
+<button class="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-full font-label-sm text-label-sm hover:scale-[1.02] transition-transform">
+<span class="material-symbols-outlined text-[18px]" data-icon="auto_awesome">auto_awesome</span>
+                                    AI Summary
+                                </button>
+<div class="flex gap-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined" data-icon="bookmark">bookmark</span></button>
+<button class="text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined" data-icon="share">share</span></button>
+</div>
+</div>
+</div>
+</div>
+</article>
+<!-- Sidebar Items (Span 4) -->
+<div class="lg:col-span-4 flex flex-col gap-8">
+<article class="p-6 rounded-xl bg-surface-container-low border border-outline-variant hover:bg-surface-variant/30 transition-all cursor-pointer">
+<div class="flex justify-between items-start mb-3">
+<span class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-tighter">New York Times</span>
+<span class="font-label-xs text-label-xs text-on-surface-variant">12m ago</span>
+</div>
+<h4 class="font-headline-md text-headline-md text-primary mb-2">Global Trade Routes Shift Amidst Polar Thaw</h4>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2 mb-4">The emergence of new shipping channels in the Arctic Circle is forcing a total geopolitical recalibration.</p>
+<div class="flex gap-4">
+<button class="text-on-surface-variant hover:text-primary flex items-center gap-1 font-label-xs text-label-xs">
+<span class="material-symbols-outlined text-[14px]" data-icon="auto_awesome">auto_awesome</span> Summary
+                            </button>
+<button class="text-on-surface-variant hover:text-primary ml-auto"><span class="material-symbols-outlined text-[20px]" data-icon="bookmark">bookmark</span></button>
+</div>
+</article>
+<article class="p-6 rounded-xl bg-surface-container-low border border-outline-variant hover:bg-surface-variant/30 transition-all cursor-pointer relative overflow-hidden">
+<div class="absolute top-4 right-4 w-1.5 h-1.5 rounded-full bg-primary"></div>
+<div class="flex justify-between items-start mb-3">
+<span class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-tighter">The Verge</span>
+<span class="font-label-xs text-label-xs text-on-surface-variant">32m ago</span>
+</div>
+<h4 class="font-headline-md text-headline-md text-primary mb-2">The End of the Smartphone Era?</h4>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2 mb-4">Neural interfaces and spatial computing are finally ready for the consumer mass market.</p>
+<div class="flex gap-4">
+<button class="text-on-surface-variant hover:text-primary flex items-center gap-1 font-label-xs text-label-xs">
+<span class="material-symbols-outlined text-[14px]" data-icon="auto_awesome">auto_awesome</span> Summary
+                            </button>
+<button class="text-on-surface-variant hover:text-primary ml-auto"><span class="material-symbols-outlined text-[20px]" data-icon="bookmark">bookmark</span></button>
+</div>
+</article>
+</div>
+<!-- Secondary Row -->
+<article class="lg:col-span-4 p-6 rounded-xl bg-surface-container-low border border-outline-variant hover:bg-surface-variant/30 transition-all cursor-pointer">
+<img class="w-full h-40 object-cover rounded-lg mb-6 grayscale group-hover:grayscale-0 transition-all" data-alt="A macro photograph of vintage computer components and circuits, stylized with a cool, monochromatic color palette of slate grays and muted whites. The lighting is low and dramatic, highlighting the intricate geometric textures of the hardware. The image evokes a sense of technological nostalgia combined with modern, clean architectural design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuALt9cnH1hzsY_e3gB6kFrfNhkR4f4yNcaWDBCK-XoKpn0kTBATGUOId_s7xA7LDXGti-7wyFPCnZmp6dcmX4v0eUwTi9dEzY7NdnKN2HdET7u2bc88z8XBpsKuKQu-fSNViaQNvgdC0NytYJjT3wmPBsqhEp4Rfujy2h5SKmVthsu9YuFjxHdCHeYB2jlykMTJIHwU6EDElyHV8GuQZaoURvc2ztcuJ8mrTnMlOmsITs0Orer5EM2DncAxrC1HOGbNgv5bssHi4Y1H"/>
+<div class="flex justify-between items-start mb-3">
+<span class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-tighter">TechCrunch</span>
+<span class="font-label-xs text-label-xs text-on-surface-variant">1h ago</span>
+</div>
+<h4 class="font-headline-md text-headline-md text-primary mb-2">Venture Funding Hits 5-Year Low</h4>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2 mb-4">Startup ecosystems are facing a 'great filter' as investors prioritize profitability over rapid growth.</p>
+<div class="flex gap-4">
+<button class="text-on-surface-variant hover:text-primary flex items-center gap-1 font-label-xs text-label-xs">
+<span class="material-symbols-outlined text-[14px]" data-icon="auto_awesome">auto_awesome</span> Summary
+                        </button>
+<button class="text-on-surface-variant hover:text-primary ml-auto"><span class="material-symbols-outlined text-[20px]" data-icon="bookmark">bookmark</span></button>
+</div>
+</article>
+<article class="lg:col-span-4 p-6 rounded-xl bg-surface-container-low border border-outline-variant hover:bg-surface-variant/30 transition-all cursor-pointer">
+<div class="flex justify-between items-start mb-3">
+<span class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-tighter">National Geographic</span>
+<span class="font-label-xs text-label-xs text-on-surface-variant">2h ago</span>
+</div>
+<h4 class="font-headline-md text-headline-md text-primary mb-2">Deep Sea Mining: The New Frontier</h4>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2 mb-4">Exploration of the Clarion-Clipperton Zone reveals vast mineral wealth and ecological risk.</p>
+<div class="flex gap-4">
+<button class="text-on-surface-variant hover:text-primary flex items-center gap-1 font-label-xs text-label-xs">
+<span class="material-symbols-outlined text-[14px]" data-icon="auto_awesome">auto_awesome</span> Summary
+                        </button>
+<button class="text-on-surface-variant hover:text-primary ml-auto"><span class="material-symbols-outlined text-[20px]" data-icon="bookmark">bookmark</span></button>
+</div>
+</article>
+<article class="lg:col-span-4 p-6 rounded-xl bg-surface-container-low border border-outline-variant hover:bg-surface-variant/30 transition-all cursor-pointer">
+<div class="flex justify-between items-start mb-3">
+<span class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-tighter">Aeon Magazine</span>
+<span class="font-label-xs text-label-xs text-on-surface-variant">3h ago</span>
+</div>
+<h4 class="font-headline-md text-headline-md text-primary mb-2">The Philosophy of Digital Silence</h4>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2 mb-4">In an age of hyper-connectivity, the most radical act is to be completely unreachable.</p>
+<div class="flex gap-4">
+<button class="text-on-surface-variant hover:text-primary flex items-center gap-1 font-label-xs text-label-xs">
+<span class="material-symbols-outlined text-[14px]" data-icon="auto_awesome">auto_awesome</span> Summary
+                        </button>
+<button class="text-on-surface-variant hover:text-primary ml-auto"><span class="material-symbols-outlined text-[20px]" data-icon="bookmark">bookmark</span></button>
+</div>
+</article>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation (Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full md:hidden flex justify-around items-center px-6 py-3 pb-safe bg-surface/90 dark:bg-surface/90 backdrop-blur-md border-t border-outline-variant z-50">
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary bg-secondary-container/50 rounded-xl px-3 py-1 active:scale-110 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-xs text-label-xs">Inbox</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant active:bg-surface-variant" href="#">
+<span class="material-symbols-outlined" data-icon="inbox">inbox</span>
+<span class="font-label-xs text-label-xs">Unread</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant active:bg-surface-variant" href="#">
+<span class="material-symbols-outlined" data-icon="bookmark">bookmark</span>
+<span class="font-label-xs text-label-xs">Saved</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant active:bg-surface-variant" href="#">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+<span class="font-label-xs text-label-xs">Search</span>
+</a>
+</nav>
+</body></html>

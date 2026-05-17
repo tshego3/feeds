@@ -202,3 +202,111 @@ struct FeedViewModelTests {
         #expect(vm.hasItems == false)
     }
 }
+
+// MARK: - BookmarkViewModel Tests
+
+@Suite("BookmarkViewModel Tests")
+struct BookmarkViewModelTests {
+    @Test("initial state has no saved articles")
+    @MainActor
+    func initialState() {
+        let vm = BookmarkViewModel()
+        #expect(vm.savedArticles.isEmpty)
+        #expect(vm.hasSavedArticles == false)
+    }
+
+    @Test("toggle adds article to bookmarks")
+    @MainActor
+    func toggleAdds() {
+        let vm = BookmarkViewModel()
+        let item = FeedItem(title: "Test", link: "https://example.com", description: "Desc", pubDate: "", imageURLs: [])
+        vm.toggle(item)
+        #expect(vm.savedArticles.count == 1)
+        #expect(vm.isBookmarked(item) == true)
+    }
+
+    @Test("toggle removes existing bookmark")
+    @MainActor
+    func toggleRemoves() {
+        let vm = BookmarkViewModel()
+        let item = FeedItem(title: "Test", link: "https://example.com", description: "Desc", pubDate: "", imageURLs: [])
+        vm.toggle(item)
+        vm.toggle(item)
+        #expect(vm.savedArticles.isEmpty)
+        #expect(vm.isBookmarked(item) == false)
+    }
+
+    @Test("remove deletes specific article")
+    @MainActor
+    func removeArticle() {
+        let vm = BookmarkViewModel()
+        let item = FeedItem(title: "Test", link: "https://example.com", description: "Desc", pubDate: "", imageURLs: [])
+        vm.toggle(item)
+        let saved = vm.savedArticles[0]
+        vm.remove(saved)
+        #expect(vm.savedArticles.isEmpty)
+    }
+
+    @Test("articles filters by tag")
+    @MainActor
+    func articlesForTag() {
+        let vm = BookmarkViewModel()
+        let item = FeedItem(title: "Test", link: "https://example.com", description: "Desc", pubDate: "", imageURLs: [])
+        vm.toggle(item)
+        #expect(vm.articles(for: "#readlater").count == 1)
+        #expect(vm.articles(for: "#research").isEmpty)
+        #expect(vm.articles(for: "#all").count == 1)
+    }
+}
+
+// MARK: - ArticleReadingViewModel Tests
+
+@Suite("ArticleReadingViewModel Tests")
+struct ArticleReadingViewModelTests {
+    @Test("initial state reflects bookmark status")
+    @MainActor
+    func initialState() {
+        let bookmarks = BookmarkViewModel()
+        let item = FeedItem(title: "Test", link: "https://example.com", description: "Desc", pubDate: "", imageURLs: [])
+        let vm = ArticleReadingViewModel(item: item, bookmarkViewModel: bookmarks)
+        #expect(vm.isBookmarked == false)
+        #expect(vm.fontSizeScale == 1.0)
+        #expect(vm.showShareSheet == false)
+    }
+
+    @Test("toggleBookmark changes state")
+    @MainActor
+    func toggleBookmark() {
+        let bookmarks = BookmarkViewModel()
+        let item = FeedItem(title: "Test", link: "https://example.com", description: "Desc", pubDate: "", imageURLs: [])
+        let vm = ArticleReadingViewModel(item: item, bookmarkViewModel: bookmarks)
+        vm.toggleBookmark()
+        #expect(vm.isBookmarked == true)
+        vm.toggleBookmark()
+        #expect(vm.isBookmarked == false)
+    }
+
+    @Test("cycleFontSize cycles through three sizes")
+    @MainActor
+    func cycleFontSize() {
+        let bookmarks = BookmarkViewModel()
+        let item = FeedItem(title: "Test", link: "https://example.com", description: "Desc", pubDate: "", imageURLs: [])
+        let vm = ArticleReadingViewModel(item: item, bookmarkViewModel: bookmarks)
+        #expect(vm.fontSizeScale == 1.0)
+        vm.cycleFontSize()
+        #expect(vm.fontSizeScale == 1.2)
+        vm.cycleFontSize()
+        #expect(vm.fontSizeScale == 1.4)
+        vm.cycleFontSize()
+        #expect(vm.fontSizeScale == 1.0)
+    }
+
+    @Test("shareURL returns valid URL from item link")
+    @MainActor
+    func shareURL() {
+        let bookmarks = BookmarkViewModel()
+        let item = FeedItem(title: "Test", link: "https://example.com/article", description: "Desc", pubDate: "", imageURLs: [])
+        let vm = ArticleReadingViewModel(item: item, bookmarkViewModel: bookmarks)
+        #expect(vm.shareURL == URL(string: "https://example.com/article"))
+    }
+}

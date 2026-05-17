@@ -7,7 +7,12 @@ import Foundation
 
 /// One article parsed from an RSS feed.
 /// C#: public record FeedItem(Guid Id, string Title, string Link, string Description, string PubDate, List<string?> ImageURLs);
-struct FeedItem: Identifiable, Equatable {
+struct FeedItem: Identifiable, Equatable, Hashable {
+    // Hashable via id only — Array<String?> doesn't auto-synthesize Hashable.
+    // C#: override int GetHashCode() => Id.GetHashCode();
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
     // "UUID()" auto-generates — like "Guid.NewGuid()" in C#.
     let id = UUID()
     let title: String
@@ -20,9 +25,11 @@ struct FeedItem: Identifiable, Equatable {
     // "var" for computed props (must be mutable syntax even though it's read-only).
     // "URL" in Swift = "Uri" in C#.
     var displayImage: URL? {
-        // "compactMap" removes nils from a sequence — C#: .Where(x => x != null).Select(x => x!)
-        // ".first" = C# .FirstOrDefault()
-        // "URL(string:)" = new Uri(string) — returns nil if invalid (C# would throw).
         imageURLs.compactMap { $0 }.compactMap { URL(string: $0) }.first
+    }
+
+    /// Plain-text version of description with HTML tags stripped. Safe for card previews.
+    var plainDescription: String {
+        Helpers.stripHTML(description)
     }
 }

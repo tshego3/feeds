@@ -16,19 +16,32 @@ enum Helpers {
     /// RSS dates look like: "Mon, 12 May 2025 14:30:00 +0000"
     /// Output: "May 12, 2025"
     static func formatDate(_ dateString: String) -> String {
-        // DateFormatter ≈ C# DateTime.ParseExact / DateTimeFormatInfo.
         let inputFormatter = DateFormatter()
-        inputFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss Z"  // RSS standard format
-        inputFormatter.locale = Locale(identifier: "en_US_POSIX")  // C#: CultureInfo.InvariantCulture
+        inputFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss Z"
+        inputFormatter.locale = Locale(identifier: "en_US_POSIX")
 
-        // "guard let date = ... else { return dateString }" — parse or return original string.
-        // C#: if (!DateTime.TryParseExact(..., out var date)) return dateString;
         guard let date = inputFormatter.date(from: dateString) else {
             return dateString
         }
 
         let outputFormatter = DateFormatter()
-        outputFormatter.dateStyle = .medium  // "May 12, 2025" — C#: date.ToString("MMM d, yyyy")
+        outputFormatter.dateStyle = .medium
         return outputFormatter.string(from: date)
+    }
+
+    /// Strips HTML tags and decodes common entities, returning plain text.
+    static func stripHTML(_ html: String) -> String {
+        guard html.contains("<") else { return html }
+        return html
+            .replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
+            .replacingOccurrences(of: "&nbsp;", with: " ")
+            .replacingOccurrences(of: "&amp;", with: "&")
+            .replacingOccurrences(of: "&lt;", with: "<")
+            .replacingOccurrences(of: "&gt;", with: ">")
+            .replacingOccurrences(of: "&quot;", with: "\"")
+            .replacingOccurrences(of: "&#39;", with: "'")
+            .replacingOccurrences(of: "&#x27;", with: "'")
+            .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }

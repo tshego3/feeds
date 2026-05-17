@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#eae1dd",
+                        "on-secondary-fixed-variant": "#474747",
+                        "on-primary-fixed": "#1a1c1c",
+                        "on-primary-fixed-variant": "#454747",
+                        "surface-container-high": "#2a2a2a",
+                        "on-secondary-container": "#b6b5b4",
+                        "on-error-container": "#ffdad6",
+                        "error-container": "#93000a",
+                        "surface-dim": "#131313",
+                        "surface-bright": "#393939",
+                        "on-secondary": "#303030",
+                        "primary-fixed": "#e2e2e2",
+                        "tertiary-fixed-dim": "#cec5c1",
+                        "primary-fixed-dim": "#c6c6c7",
+                        "tertiary-container": "#eae1dd",
+                        "surface": "#131313",
+                        "secondary": "#c8c6c6",
+                        "background": "#131313",
+                        "on-error": "#690005",
+                        "inverse-primary": "#5d5f5f",
+                        "on-tertiary-fixed": "#1f1b19",
+                        "on-secondary-fixed": "#1b1c1c",
+                        "tertiary": "#ffffff",
+                        "surface-tint": "#c6c6c7",
+                        "on-surface": "#e5e2e1",
+                        "on-primary": "#2f3131",
+                        "inverse-surface": "#e5e2e1",
+                        "surface-container": "#201f1f",
+                        "surface-container-lowest": "#0e0e0e",
+                        "on-tertiary-fixed-variant": "#4b4643",
+                        "on-background": "#e5e2e1",
+                        "secondary-fixed": "#e4e2e1",
+                        "primary": "#ffffff",
+                        "secondary-container": "#474747",
+                        "on-tertiary": "#342f2d",
+                        "surface-container-low": "#1c1b1b",
+                        "on-primary-container": "#636565",
+                        "on-tertiary-container": "#696360",
+                        "on-surface-variant": "#c4c7c8",
+                        "primary-container": "#e2e2e2",
+                        "outline": "#8e9192",
+                        "outline-variant": "#444748",
+                        "surface-variant": "#353534",
+                        "error": "#ffb4ab",
+                        "surface-container-highest": "#353534",
+                        "inverse-on-surface": "#313030",
+                        "secondary-fixed-dim": "#c8c6c6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "section-gap": "48px",
+                        "gutter": "16px",
+                        "container-padding": "24px",
+                        "stack-gap": "12px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-xs": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["13px", {"lineHeight": "1", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "body-lg": ["17px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}],
+                        "label-xs": ["11px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "body-md": ["15px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}],
+                        "headline-md": ["20px", {"lineHeight": "1.4", "letterSpacing": "-0.01em", "fontWeight": "500"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #121212;
+            color: #e5e2e1;
+        }
+        .glass-panel {
+            background: rgba(28, 28, 28, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid #2d2d2d;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md text-body-md selection:bg-primary selection:text-on-primary">
+<!-- NavigationDrawer (Desktop) -->
+<aside class="hidden md:flex flex-col h-screen fixed left-0 top-0 overflow-y-auto h-full w-72 border-r border-outline-variant bg-surface-container dark:bg-surface-container">
+<div class="px-6 py-8">
+<h1 class="font-headline-lg text-headline-lg font-bold tracking-tighter text-primary dark:text-primary">feeds</h1>
+</div>
+<nav class="flex flex-col gap-1 px-2">
+<a class="flex items-center gap-4 px-4 py-3 text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">rss_feed</span>
+<span class="font-label-sm text-label-sm">All Feeds</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">mark_as_unread</span>
+<span class="font-label-sm text-label-sm">Unread</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">bookmark</span>
+<span class="font-label-sm text-label-sm">Bookmarks</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant dark:hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">explore</span>
+<span class="font-label-sm text-label-sm">Discover</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 bg-secondary-container dark:bg-secondary-container text-primary dark:text-primary border-l-2 border-primary active:opacity-90 transition-all scale-[0.99]" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-sm text-label-sm">Settings</span>
+</a>
+</nav>
+</aside>
+<!-- TopAppBar (Mobile) -->
+<header class="flex md:hidden justify-between items-center px-4 py-3 w-full fixed top-0 z-40 bg-surface/80 dark:bg-surface/80 backdrop-blur-xl border-b border-outline-variant">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary">menu</span>
+<span class="font-headline-md-mobile text-headline-md-mobile font-bold tracking-tighter text-primary dark:text-primary">feeds</span>
+</div>
+<span class="material-symbols-outlined text-primary">search</span>
+</header>
+<!-- Main Content Canvas -->
+<main class="md:ml-72 min-h-screen pt-20 md:pt-12 pb-24 md:pb-12 px-6 md:px-12 flex justify-center">
+<div class="w-full max-w-[720px] flex flex-col gap-10">
+<!-- Header -->
+<section>
+<h2 class="font-headline-lg text-headline-lg mb-2">Settings</h2>
+<p class="text-on-surface-variant font-body-md">Configure your reading experience and account preferences.</p>
+</section>
+<!-- Account Section -->
+<section class="flex flex-col gap-4">
+<h3 class="font-label-sm text-label-sm text-primary uppercase tracking-widest opacity-50">Account</h3>
+<div class="glass-panel rounded-xl p-6 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center overflow-hidden">
+<img alt="Profile" class="w-full h-full object-cover" data-alt="A professional studio headshot of a person with a neutral expression, set against a dark, monochromatic background that matches the graphite and charcoal tones of the UI. The lighting is soft and cinematic, highlighting facial features with a subtle glow, maintaining a high-end, minimalist aesthetic suitable for a modern power-user application." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOP23RaxpFt2J1LMtlBF54_bK6hPph5DlQWOp7dfjOQSqZQ-asO1BWHd5hCFmoYuMQXW7Itt1NAbvTULCAqBl0-9xcBbl5Yg-ZGnbEWLllFAS5K42RY2Rd1Sv9V0WKbLJ_n2TZ-sdaBTRH4jXTYZu5VX4RB3VzfUhN7qNiX5MDHjEL0hnUVjPJq46kLqru7gasiye19Ace8x_zBYQAzcqS84XUgYL72s_Bnr8mI64sKqZxq_M0-iROdzcUp9QBghX8MWe-hNOzeipf"/>
+</div>
+<div>
+<p class="font-headline-md text-headline-md">Alex Rivers</p>
+<p class="text-on-surface-variant font-label-sm">alex.rivers@example.com</p>
+</div>
+</div>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-sm hover:opacity-90 transition-opacity">Manage</button>
+</div>
+</section>
+<!-- Appearance Section -->
+<section class="flex flex-col gap-4">
+<h3 class="font-label-sm text-label-sm text-primary uppercase tracking-widest opacity-50">Appearance</h3>
+<div class="glass-panel rounded-xl overflow-hidden">
+<div class="grid grid-cols-3 p-4 gap-4">
+<div class="flex flex-col gap-2 cursor-pointer group">
+<div class="aspect-video rounded-lg bg-[#F5F5F5] border-2 border-transparent group-hover:border-outline-variant transition-all"></div>
+<span class="text-center font-label-xs text-on-surface-variant">Light</span>
+</div>
+<div class="flex flex-col gap-2 cursor-pointer group">
+<div class="aspect-video rounded-lg bg-[#1C1C1C] border-2 border-primary transition-all"></div>
+<span class="text-center font-label-xs text-primary">Dark</span>
+</div>
+<div class="flex flex-col gap-2 cursor-pointer group">
+<div class="aspect-video rounded-lg bg-black border-2 border-transparent group-hover:border-outline-variant transition-all overflow-hidden relative">
+<div class="absolute inset-0 bg-gradient-to-br from-zinc-800 to-black"></div>
+</div>
+<span class="text-center font-label-xs text-on-surface-variant">Monochrome</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Notifications & Preferences -->
+<section class="flex flex-col gap-4">
+<h3 class="font-label-sm text-label-sm text-primary uppercase tracking-widest opacity-50">Preferences</h3>
+<div class="glass-panel rounded-xl divide-y divide-outline-variant">
+<div class="flex items-center justify-between p-4">
+<div class="flex flex-col">
+<span class="font-body-md">Push Notifications</span>
+<span class="text-on-surface-variant text-label-xs">Receive alerts for new articles in priority feeds</span>
+</div>
+<div class="w-10 h-5 bg-primary rounded-full relative cursor-pointer">
+<div class="absolute right-1 top-1 w-3 h-3 bg-on-primary rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between p-4">
+<div class="flex flex-col">
+<span class="font-body-md">Auto-Refresh Feeds</span>
+<span class="text-on-surface-variant text-label-xs">Synchronize content every 15 minutes</span>
+</div>
+<div class="w-10 h-5 bg-surface-container-highest rounded-full relative cursor-pointer">
+<div class="absolute left-1 top-1 w-3 h-3 bg-on-surface-variant rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between p-4">
+<div class="flex flex-col">
+<span class="font-body-md">Mark as Read on Scroll</span>
+<span class="text-on-surface-variant text-label-xs">Automatically clear items as they leave the viewport</span>
+</div>
+<div class="w-10 h-5 bg-primary rounded-full relative cursor-pointer">
+<div class="absolute right-1 top-1 w-3 h-3 bg-on-primary rounded-full"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Import/Export -->
+<section class="flex flex-col gap-4">
+<h3 class="font-label-sm text-label-sm text-primary uppercase tracking-widest opacity-50">Data Management</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="glass-panel rounded-xl p-6 flex flex-col gap-4 hover:bg-surface-variant transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-primary text-3xl">upload_file</span>
+<div>
+<p class="font-headline-md text-headline-md">Import OPML</p>
+<p class="text-on-surface-variant font-label-xs mt-1">Migration from another reader</p>
+</div>
+</div>
+<div class="glass-panel rounded-xl p-6 flex flex-col gap-4 hover:bg-surface-variant transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-primary text-3xl">download</span>
+<div>
+<p class="font-headline-md text-headline-md">Export Backup</p>
+<p class="text-on-surface-variant font-label-xs mt-1">Download your feed list as OPML</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Keyboard Shortcuts -->
+<section class="flex flex-col gap-4">
+<h3 class="font-label-sm text-label-sm text-primary uppercase tracking-widest opacity-50">Keyboard Shortcuts</h3>
+<div class="glass-panel rounded-xl p-4 grid grid-cols-2 gap-y-4">
+<div class="flex items-center justify-between pr-8 border-r border-outline-variant">
+<span class="text-on-surface-variant text-label-sm">Next Article</span>
+<kbd class="bg-surface-container-highest px-2 py-1 rounded text-label-xs font-mono">J</kbd>
+</div>
+<div class="flex items-center justify-between pl-8">
+<span class="text-on-surface-variant text-label-sm">Previous Article</span>
+<kbd class="bg-surface-container-highest px-2 py-1 rounded text-label-xs font-mono">K</kbd>
+</div>
+<div class="flex items-center justify-between pr-8 border-r border-outline-variant">
+<span class="text-on-surface-variant text-label-sm">Mark Read</span>
+<kbd class="bg-surface-container-highest px-2 py-1 rounded text-label-xs font-mono">M</kbd>
+</div>
+<div class="flex items-center justify-between pl-8">
+<span class="text-on-surface-variant text-label-sm">Search</span>
+<kbd class="bg-surface-container-highest px-2 py-1 rounded text-label-xs font-mono">/</kbd>
+</div>
+</div>
+</section>
+<!-- Footer Meta -->
+<footer class="mt-10 py-10 border-t border-outline-variant flex flex-col items-center gap-2">
+<span class="font-headline-md text-headline-md opacity-20 font-bold tracking-tighter">feeds v2.4.0</span>
+<div class="flex gap-4 text-on-surface-variant font-label-xs">
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="hover:text-primary transition-colors" href="#">Support</a>
+</div>
+</footer>
+</div>
+</main>
+<!-- BottomNavBar (Mobile) -->
+<nav class="fixed bottom-0 left-0 w-full md:hidden flex justify-around items-center px-6 py-3 pb-safe bg-surface/90 dark:bg-surface/90 backdrop-blur-md border-t border-outline-variant z-50">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant active:bg-surface-variant" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-xs text-label-xs">Inbox</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant active:bg-surface-variant" href="#">
+<span class="material-symbols-outlined">inbox</span>
+<span class="font-label-xs text-label-xs">Unread</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant active:bg-surface-variant" href="#">
+<span class="material-symbols-outlined">bookmark</span>
+<span class="font-label-xs text-label-xs">Saved</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary bg-secondary-container/50 rounded-xl px-3 py-1 scale-110 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-xs text-label-xs">Settings</span>
+</a>
+</nav>
+</body></html>

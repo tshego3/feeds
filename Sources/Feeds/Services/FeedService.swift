@@ -5,6 +5,9 @@
 // Swift errors use "throw" / "try" / "catch" — nearly identical to C# exceptions.
 
 import Foundation
+import os
+
+private let logger = Logger(subsystem: "com.feeds.app", category: "FeedService")
 
 // MARK: - Error Types
 
@@ -42,6 +45,9 @@ enum FeedService {
             return RSSXMLParser.parse(data: data)
         }
 
+        // Direct fetch failed — safe to proceed to proxy fallback
+        logger.debug("Direct fetch failed for \(url, privacy: .public), trying proxy services")
+
         // Proxy fallback — try proxies if direct fetch failed
         let proxyURLs = [
             "https://rss-proxy-api.netlify.app/.netlify/functions/fetch-xml?url=\(feedURL.absoluteString)",
@@ -58,6 +64,8 @@ enum FeedService {
                    let httpResponse = response as? HTTPURLResponse,
                    httpResponse.statusCode == 200 {
                     return RSSXMLParser.parse(data: data)
+                } else {
+                    logger.debug("Proxy \(proxyString, privacy: .public) failed, trying next")
                 }
             }
         }

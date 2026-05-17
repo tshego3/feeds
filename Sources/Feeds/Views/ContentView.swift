@@ -3,37 +3,29 @@
 // C# parallel: like MainPage.xaml.cs in MAUI, or MainWindow.xaml in WPF.
 // SwiftUI is declarative (like XAML) but written in Swift code, not markup.
 // Uses NavigationSplitView for sidebar + detail pane (≈ C# SplitView / NavigationView with Master-Detail).
-
 import SwiftUI
 
-/// The root view of the app. C#: public partial class MainPage : ContentPage { }
-/// "View" protocol ≈ C# IView interface — anything that can draw UI.
+/// Root view — desktop uses sidebar NavigationDrawer, mobile uses bottom tab bar.
+/// Implements the "Monolithic Clarity" design system layout.
 struct ContentView: View {
 
     // "@StateObject" creates and owns a ViewModel instance.
     // C# MAUI: like "BindingContext = new FeedViewModel();" in the constructor.
     // "@StateObject" keeps the object alive across view re-renders (like a singleton per view).
     @StateObject var viewModel = FeedViewModel()
+    @EnvironmentObject var bookmarkViewModel: BookmarkViewModel
+    @State private var selectedTab: AppTab = .home
+    @State private var selectedArticle: FeedItem?
+    @State private var showMobileDrawer: Bool = false
 
     var body: some View {
         // NavigationSplitView ≈ C# SplitView / Master-Detail — sidebar + detail pane.
-        NavigationSplitView {
-            // Sidebar pane — feed list with grouped sub-items
-            FeedSidebar(viewModel: viewModel)
-        } detail: {
-            // Detail pane — article grid
-            Group {
-                if viewModel.isLoading {
-                    loadingView
-                } else if let error = viewModel.errorMessage {
-                    errorView(error)
-                } else if viewModel.hasItems {
-                    feedGridView
-                } else {
-                    emptyStateView
-                }
-            }
-            .navigationTitle(viewModel.selectedFeed?.title ?? "Feeds")
+        Group {
+            #if os(macOS)
+            desktopLayout
+            #else
+            adaptiveLayout
+            #endif
         }
         // ".task { }" runs async work when the view appears — C#: OnAppearing += async () => { }
         // This replaces ".onAppear" when you need async/await.
@@ -44,59 +36,189 @@ struct ContentView: View {
         }
     }
 
-    // MARK: - Subviews
+    // MARK: - Desktop Layout (macOS always uses sidebar)
 
-    private var loadingView: some View {
-        ProgressView()
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding(.top, 100)
+    private var desktopLayout: some View {
+        HStack(spacing: 0) {
+            NavigationDrawer(selectedTab: $selectedTab, viewModel: viewModel)
+            tabContent
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .background(Theme.background)
     }
 
-    private func errorView(_ message: String) -> some View {
-        VStack(spacing: 12) {
-            Image(systemName: "exclamationmark.triangle")
-                .font(.largeTitle)
-                .foregroundColor(.secondary)
-            Text(message)
-                .font(.body)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-            Button("Try Again") {
-                Task {
-                    if let feed = viewModel.selectedFeed {
-                        await viewModel.selectFeed(feed)
+    // MARK: - Adaptive Layout (iOS: sidebar on iPad, tabs on iPhone)
+
+    private var adaptiveLayout: some View {
+        GeometryReader { geo in
+            let isWide = geo.size.width > 700
+            if isWide {
+                HStack(spacing: 0) {
+                    NavigationDrawer(selectedTab: $selectedTab, viewModel: viewModel)
+                    tabContent
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+                .background(Theme.background)
+            } else {
+                ZStack(alignment: .bottom) {
+                    VStack(spacing: 0) {
+                        mobileTopBar
+                        tabContent
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+                    MobileTabBar(selectedTab: $selectedTab)
+                }
+                .overlay(alignment: .leading) {
+                    if showMobileDrawer {
+                        mobileDrawerOverlay
                     }
                 }
+                .background(Theme.background)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.top, 100)
     }
 
-    private var feedGridView: some View {
-        ScrollView {
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 300))], spacing: 16) {
-                ForEach(viewModel.feedItems) { item in
-                    CardView(item: item)
+    // MARK: - Mobile Top Bar
+
+    private var mobileTopBar: some View {
+        HStack {
+            Button {
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    showMobileDrawer.toggle()
                 }
+            } label: {
+                Image(systemName: "line.3.horizontal")
+                    .font(.system(size: 20))
+                    .foregroundColor(Theme.primary)
             }
-            .padding()
+            .buttonStyle(.plain)
+
+            Text("feeds")
+                .font(.system(size: 24, weight: .bold))
+                .tracking(-1)
+                .foregroundColor(Theme.primary)
+            Spacer()
+            Button {
+                selectedTab = .search
+            } label: {
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 20))
+                    .foregroundColor(Theme.primary)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(Theme.surface.opacity(0.8))
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(Theme.outlineVariant)
+                .frame(height: 1)
         }
     }
 
-    private var emptyStateView: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "tray")
-                .font(.largeTitle)
-                .foregroundColor(.secondary)
-            Text("No articles found.")
-                .font(.body)
-                .foregroundColor(.secondary)
-            Text("Select a feed from the sidebar to get started.")
-                .font(.caption)
-                .foregroundColor(.secondary)
+    // MARK: - Mobile Drawer Overlay
+
+    private var mobileDrawerOverlay: some View {
+        ZStack(alignment: .leading) {
+            Color.black.opacity(0.4)
+                .ignoresSafeArea()
+                .onTapGesture {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        showMobileDrawer = false
+                    }
+                }
+
+            NavigationDrawer(selectedTab: $selectedTab, viewModel: viewModel)
+                .transition(.move(edge: .leading))
+                .onChange(of: selectedTab) {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        showMobileDrawer = false
+                    }
+                }
+                .onChange(of: viewModel.selectedFeedId) {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        showMobileDrawer = false
+                    }
+                }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.top, 100)
+    }
+
+    // MARK: - Tab Content
+
+    @ViewBuilder
+    private var tabContent: some View {
+        switch selectedTab {
+        case .home:
+            NavigationStack {
+                DashboardView(viewModel: viewModel)
+                    .onChange(of: viewModel.selectedFeedId) {
+                        guard let id = viewModel.selectedFeedId,
+                              let feed = viewModel.allFeeds.first(where: { $0.id == id }) else { return }
+                        Task { await viewModel.selectFeed(feed) }
+                    }
+                    .navigationDestination(for: FeedItem.self) { item in
+                        ArticleReadingView(
+                            viewModel: ArticleReadingViewModel(
+                                item: item,
+                                bookmarkViewModel: bookmarkViewModel
+                            )
+                        )
+                        .onAppear { viewModel.markAsRead(item) }
+                    }
+            }
+        case .unread:
+            NavigationStack {
+                DashboardView(viewModel: viewModel, filterUnreadOnly: true)
+                    .onChange(of: viewModel.selectedFeedId) {
+                        guard let id = viewModel.selectedFeedId,
+                              let feed = viewModel.allFeeds.first(where: { $0.id == id }) else { return }
+                        Task { await viewModel.selectFeed(feed) }
+                    }
+                    .navigationDestination(for: FeedItem.self) { item in
+                        ArticleReadingView(
+                            viewModel: ArticleReadingViewModel(
+                                item: item,
+                                bookmarkViewModel: bookmarkViewModel
+                            )
+                        )
+                        .onAppear { viewModel.markAsRead(item) }
+                    }
+            }
+        case .bookmarks:
+            NavigationStack {
+                SavedArticlesView()
+                    .navigationDestination(for: FeedItem.self) { item in
+                        ArticleReadingView(
+                            viewModel: ArticleReadingViewModel(
+                                item: item,
+                                bookmarkViewModel: bookmarkViewModel
+                            )
+                        )
+                        .onAppear { viewModel.markAsRead(item) }
+                    }
+            }
+        case .discover:
+            NavigationStack {
+                ExploreView(viewModel: viewModel)
+            }
+        case .search:
+            NavigationStack {
+                SearchView(viewModel: viewModel)
+                    .navigationDestination(for: FeedItem.self) { item in
+                        ArticleReadingView(
+                            viewModel: ArticleReadingViewModel(
+                                item: item,
+                                bookmarkViewModel: bookmarkViewModel
+                            )
+                        )
+                        .onAppear { viewModel.markAsRead(item) }
+                    }
+            }
+        case .settings:
+            NavigationStack {
+                SettingsView(feedViewModel: viewModel)
+            }
+        }
     }
 }

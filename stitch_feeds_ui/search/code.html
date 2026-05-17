@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Search Feeds</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #121212;
+            color: #e5e2e1;
+            margin: 0;
+            padding: 0;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(28, 28, 28, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid #2D2D2D;
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #121212;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2D2D2D;
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-fixed": "#eae1dd",
+                      "on-secondary-fixed-variant": "#474747",
+                      "on-primary-fixed": "#1a1c1c",
+                      "on-primary-fixed-variant": "#454747",
+                      "surface-container-high": "#2a2a2a",
+                      "on-secondary-container": "#b6b5b4",
+                      "on-error-container": "#ffdad6",
+                      "error-container": "#93000a",
+                      "surface-dim": "#131313",
+                      "surface-bright": "#393939",
+                      "on-secondary": "#303030",
+                      "primary-fixed": "#e2e2e2",
+                      "tertiary-fixed-dim": "#cec5c1",
+                      "primary-fixed-dim": "#c6c6c7",
+                      "tertiary-container": "#eae1dd",
+                      "surface": "#131313",
+                      "secondary": "#c8c6c6",
+                      "background": "#131313",
+                      "on-error": "#690005",
+                      "inverse-primary": "#5d5f5f",
+                      "on-tertiary-fixed": "#1f1b19",
+                      "on-secondary-fixed": "#1b1c1c",
+                      "tertiary": "#ffffff",
+                      "surface-tint": "#c6c6c7",
+                      "on-surface": "#e5e2e1",
+                      "on-primary": "#2f3131",
+                      "inverse-surface": "#e5e2e1",
+                      "surface-container": "#201f1f",
+                      "surface-container-lowest": "#0e0e0e",
+                      "on-tertiary-fixed-variant": "#4b4643",
+                      "on-background": "#e5e2e1",
+                      "secondary-fixed": "#e4e2e1",
+                      "primary": "#ffffff",
+                      "secondary-container": "#474747",
+                      "on-tertiary": "#342f2d",
+                      "surface-container-low": "#1c1b1b",
+                      "on-primary-container": "#636565",
+                      "on-tertiary-container": "#696360",
+                      "on-surface-variant": "#c4c7c8",
+                      "primary-container": "#e2e2e2",
+                      "outline": "#8e9192",
+                      "outline-variant": "#444748",
+                      "surface-variant": "#353534",
+                      "error": "#ffb4ab",
+                      "surface-container-highest": "#353534",
+                      "inverse-on-surface": "#313030",
+                      "secondary-fixed-dim": "#c8c6c6"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "section-gap": "48px",
+                      "gutter": "16px",
+                      "container-padding": "24px",
+                      "stack-gap": "12px",
+                      "unit": "4px"
+              },
+              "fontFamily": {
+                      "label-sm": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "label-xs": ["Inter"],
+                      "headline-lg-mobile": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "body-md": ["Inter"],
+                      "headline-md": ["Inter"]
+              },
+              "fontSize": {
+                      "label-sm": ["13px", {"lineHeight": "1", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                      "body-lg": ["17px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}],
+                      "label-xs": ["11px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                      "body-md": ["15px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}],
+                      "headline-md": ["20px", {"lineHeight": "1.4", "letterSpacing": "-0.01em", "fontWeight": "500"}]
+              }
+            },
+          },
+        }
+      </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background selection:bg-primary selection:text-on-primary">
+<!-- Top Navigation Bar (Mobile) -->
+<header class="flex md:hidden justify-between items-center px-4 py-3 w-full bg-surface/80 dark:bg-surface/80 backdrop-blur-xl border-b border-outline-variant fixed top-0 z-40">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="menu">menu</span>
+<span class="font-headline-md-mobile text-headline-md-mobile font-bold tracking-tighter text-primary">feeds</span>
+</div>
+<span class="material-symbols-outlined text-primary" data-icon="search">search</span>
+</header>
+<!-- Navigation Drawer (Desktop) -->
+<aside class="hidden md:flex flex-col h-screen fixed left-0 top-0 overflow-y-auto h-full w-72 border-r border-outline-variant bg-surface-container">
+<div class="px-6 py-8">
+<h1 class="font-headline-lg text-headline-lg font-bold tracking-tighter text-primary">feeds</h1>
+</div>
+<nav class="flex-1 space-y-1">
+<div class="flex items-center gap-4 px-6 py-3 text-on-surface-variant hover:bg-surface-variant transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="rss_feed">rss_feed</span>
+<span class="font-label-sm text-label-sm">All Feeds</span>
+</div>
+<div class="flex items-center gap-4 px-6 py-3 text-on-surface-variant hover:bg-surface-variant transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="mark_as_unread">mark_as_unread</span>
+<span class="font-label-sm text-label-sm">Unread</span>
+</div>
+<div class="flex items-center gap-4 px-6 py-3 text-on-surface-variant hover:bg-surface-variant transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="bookmark">bookmark</span>
+<span class="font-label-sm text-label-sm">Bookmarks</span>
+</div>
+<div class="flex items-center gap-4 px-6 py-3 text-on-surface-variant hover:bg-surface-variant transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="explore">explore</span>
+<span class="font-label-sm text-label-sm">Discover</span>
+</div>
+<!-- Search is technically "active" based on user intent -->
+<div class="flex items-center gap-4 px-6 py-3 bg-secondary-container text-primary border-l-2 border-primary transition-all scale-[0.99]">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+<span class="font-label-sm text-label-sm">Search</span>
+</div>
+<div class="flex items-center gap-4 px-6 py-3 text-on-surface-variant hover:bg-surface-variant transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-sm text-label-sm">Settings</span>
+</div>
+</nav>
+</aside>
+<!-- Main Content Canvas -->
+<main class="md:ml-72 pt-16 md:pt-0 min-h-screen">
+<div class="max-w-4xl mx-auto px-6 py-12">
+<!-- Search Header Section -->
+<section class="mb-12">
+<h2 class="font-headline-lg text-headline-lg mb-8 tracking-tight">Search</h2>
+<div class="relative group">
+<div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline" data-icon="search">search</span>
+</div>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-xl py-5 pl-12 pr-4 focus:ring-0 focus:border-primary transition-all text-body-lg font-body-lg placeholder:text-on-surface-variant/40" placeholder="Search articles, sources, or topics..." type="text"/>
+</div>
+</section>
+<!-- Recent Searches / Quick Tags -->
+<section class="mb-12">
+<div class="flex items-center justify-between mb-4">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-widest">Recent Searches</span>
+<button class="text-primary font-label-xs text-label-xs hover:opacity-70 transition-opacity">CLEAR ALL</button>
+</div>
+<div class="flex flex-wrap gap-3">
+<div class="px-4 py-2 bg-secondary-container/30 border border-outline-variant rounded-full font-label-xs text-label-xs flex items-center gap-2 cursor-pointer hover:bg-secondary-container transition-colors">
+<span>Artificial Intelligence</span>
+<span class="material-symbols-outlined text-[14px]" data-icon="close">close</span>
+</div>
+<div class="px-4 py-2 bg-secondary-container/30 border border-outline-variant rounded-full font-label-xs text-label-xs flex items-center gap-2 cursor-pointer hover:bg-secondary-container transition-colors">
+<span>Architecture Daily</span>
+<span class="material-symbols-outlined text-[14px]" data-icon="close">close</span>
+</div>
+<div class="px-4 py-2 bg-secondary-container/30 border border-outline-variant rounded-full font-label-xs text-label-xs flex items-center gap-2 cursor-pointer hover:bg-secondary-container transition-colors">
+<span>Clean Code Tips</span>
+<span class="material-symbols-outlined text-[14px]" data-icon="close">close</span>
+</div>
+</div>
+</section>
+<!-- Results Grid (Bento Style) -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Sources Column -->
+<section class="md:col-span-4 space-y-6">
+<div class="flex items-center gap-2 mb-2">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-widest">Sources</span>
+</div>
+<div class="space-y-4">
+<!-- Source Card 1 -->
+<div class="p-4 bg-surface-container-high rounded-xl border border-outline-variant hover:border-outline transition-colors group cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-surface-variant flex items-center justify-center text-primary overflow-hidden">
+<img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="A minimalist logo for a technology publication, featuring sharp geometric lines in a monochromatic palette of charcoal and smoke grey. The icon is set against a clean, flat background, suggesting a professional and high-density information source for modern power users." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAaVBXZw-WH_XcKeggoqJdb1gzNiEUbR3_XzADVrXyGpkgX5IOEDpSzvg-V4mZVWYni1zZgzKyWpcaTVFGD10JMBpgiGtmH9VAu8npS6xtDoYjEAjCq8m5mla0gPyuGP-CGm3zLArZx3MLYh2LYVy6pXs8QRXfDioBYd8iny9Xoqh46QtiDhn6I2Adcqv8lbX4eRmgMlTf5RUl_2QJy0Q5mqHKX7qb6UujCWWLO7hJU-Ixd-JvlDQs-k8hZNahxYIadcqd0IAO5-yo_"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-label-sm text-label-sm text-primary truncate">TechCrunch</p>
+<p class="font-label-xs text-label-xs text-on-surface-variant truncate">techcrunch.com</p>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors" data-icon="add_circle">add_circle</span>
+</div>
+</div>
+<!-- Source Card 2 -->
+<div class="p-4 bg-surface-container-high rounded-xl border border-outline-variant hover:border-outline transition-colors group cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-surface-variant flex items-center justify-center text-primary overflow-hidden">
+<img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="A sophisticated abstract brand mark for a news feed aggregator. The visual style is rooted in brutalist minimalism with sharp contrasts between deep black and pure white. The lighting is cold and clinical, emphasizing a focused, digital workspace environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDI591l5K1XaeM7v2dRoAsT-e5FqjO4en63qHMi3lNlwdxzLTTAjpnHETPjfb9QqdzxAxfdRZ0tc-w2F3GNBz_JPnp0ACBoPqtWnObpfz2nkbeROa0x95Hx_yDvxivwF_edq6vo-1eIsDJLAKuWom-cBRJsY9XYcp5GiL6W1BBLizDTsXUwcOYlLmlxHxF1O0sFpwm_6XV2KyaiICEWUT4tqtmutYwnoDXCRLfibiYpJRffyWLxv846RII7-2Bf3B_15VNHjFzNo_Lp"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-label-sm text-label-sm text-primary truncate">The Verge</p>
+<p class="font-label-xs text-label-xs text-on-surface-variant truncate">theverge.com</p>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Articles Column -->
+<section class="md:col-span-8 space-y-6">
+<div class="flex items-center justify-between mb-2">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-widest">Articles</span>
+<div class="flex items-center gap-2">
+<span class="font-label-xs text-label-xs text-on-surface-variant">Sort by:</span>
+<span class="font-label-xs text-label-xs text-primary cursor-pointer">Relevance</span>
+<span class="material-symbols-outlined text-[14px] text-outline" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+<div class="space-y-px">
+<!-- Article 1 -->
+<article class="py-6 border-b border-outline-variant/30 hover:bg-surface-variant/20 transition-all cursor-pointer group rounded-lg px-4 -mx-4">
+<div class="flex gap-6">
+<div class="flex-1">
+<div class="flex items-center gap-2 mb-2">
+<span class="font-label-xs text-label-xs text-primary bg-secondary-container px-2 py-0.5 rounded">AI</span>
+<span class="font-label-xs text-label-xs text-outline">5 min read</span>
+<span class="font-label-xs text-label-xs text-outline">•</span>
+<span class="font-label-xs text-label-xs text-outline">2 hours ago</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-2 group-hover:text-tertiary transition-colors">The Future of Generative Models in Professional Workflows</h3>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">How high-density information interfaces are evolving to support AI-assisted content consumption and digital hygiene...</p>
+</div>
+<div class="hidden sm:block w-32 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-surface-container-highest">
+<img class="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500" data-alt="A futuristic workspace featuring a large, ultra-wide monitor displaying complex data visualizations and minimalist text. The room is dimly lit with soft charcoal and slate tones, illuminated only by the cool glow of the screen. The aesthetic is clean, architectural, and highly focused." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBVuOu2zaYM1kBSN-NPnO6R_qGOUjSsxRtnrEdb4I8TfY2CedIzBwAaZ1FdIdX0RLgJ2jgpcuBKUPPUXX98tJM0nR_ihJmoVwCX0n7jOrd_gO9MoCtizvp4qt8ET0p6hgpMoHCYNo5q-YRZnpeDhVOJvX3Cict0FbwOAhcbTZ_F2SBqeiUjJvhCY4lIgyv-NWBCCGt1B28x2AD2EEHEDVr1IpYJ0od7GLT8SK-A4dOjnkxrA_4JAK4oeScML15hV_2HM-6DLEY4Nza1"/>
+</div>
+</div>
+</article>
+<!-- Article 2 -->
+<article class="py-6 border-b border-outline-variant/30 hover:bg-surface-variant/20 transition-all cursor-pointer group rounded-lg px-4 -mx-4">
+<div class="flex gap-6">
+<div class="flex-1">
+<div class="flex items-center gap-2 mb-2">
+<span class="font-label-xs text-label-xs text-primary bg-secondary-container px-2 py-0.5 rounded">Design</span>
+<span class="font-label-xs text-label-xs text-outline">8 min read</span>
+<span class="font-label-xs text-label-xs text-outline">•</span>
+<span class="font-label-xs text-label-xs text-outline">Yesterday</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-2 group-hover:text-tertiary transition-colors">Minimalism as a Productivity Superpower</h3>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">Reducing visual noise in our digital environments is no longer an aesthetic choice, but a cognitive necessity for deep work...</p>
+</div>
+<div class="hidden sm:block w-32 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-surface-container-highest">
+<img class="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500" data-alt="An exceptionally minimalist office interior with a single off-white desk, a sleek black lamp, and a solitary plant. The walls are a soft, textured slate gray. The overall mood is quiet, architectural, and deeply intentional, reflecting a philosophy of controlled focus and digital hygiene." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTGcH1brVne8ye5dmQi-_VC6_CBA2gQlw3S6s3oxMSd5ky8vDAyaggGeRuxqJvIfpQsxwO8XsFFanqfOHsyGT5h3ZGgomViKC99hlakucJ68wEPlZv6wjSEtBSJvDgK7wokY3QKR7f7ThKhXJQ5myVbmHAbUPGD7S8d7ALoO09yIkV65aab4VlsGbVc0eclqKNiVpSXzDftoYwn9vAOB328zn2jw2gMEmspJK9zIAWt9vW85_YEippcyUMBnFl1VrMkiIChGWN51HQ"/>
+</div>
+</div>
+</article>
+<!-- Article 3 -->
+<article class="py-6 border-b border-outline-variant/30 hover:bg-surface-variant/20 transition-all cursor-pointer group rounded-lg px-4 -mx-4">
+<div class="flex gap-6">
+<div class="flex-1">
+<div class="flex items-center gap-2 mb-2">
+<span class="font-label-xs text-label-xs text-primary bg-secondary-container px-2 py-0.5 rounded">Engineering</span>
+<span class="font-label-xs text-label-xs text-outline">12 min read</span>
+<span class="font-label-xs text-label-xs text-outline">•</span>
+<span class="font-label-xs text-label-xs text-outline">3 days ago</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-2 group-hover:text-tertiary transition-colors">Rust vs. Go: Memory Safety in High-Scale Feed Parsers</h3>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">Exploring the performance trade-offs when building modern RSS backends that handle millions of concurrent updates...</p>
+</div>
+<div class="hidden sm:block w-32 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-surface-container-highest">
+<img class="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500" data-alt="A high-tech server room with rows of dark hardware illuminated by subtle blue and white led strips. The image is captured with a shallow depth of field, highlighting the precision and technological advancement of a high-end data infrastructure. The palette is strictly monochromatic with glowing accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwZ4Kup4nVU5uJlU1tAXqFpw-c0uP0CufdBANy2VigLyUg6baEY-QJCbI8GappXisIoZ0bS7XBSr5AXG-4tmt28vqe_BpZj0jm8sBvWDW2duo2GUJbW1MPKzu8xjOCFLrqGyAXYC-L1DceOslW_ghKJXRwMZbi_REriWHcAxZGeoemllT4aMa0lTYTX8Cc3Of_T2IZ_x0EWlpuoH2pZMG1q4tatRVMlUJnoRzNG7cMBXNLoJo0I3D3iE6LBAPjj82np0Im3SAeDS3V"/>
+</div>
+</div>
+</article>
+</div>
+</section>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar (Mobile) -->
+<nav class="fixed bottom-0 left-0 w-full md:hidden flex justify-around items-center px-6 py-3 pb-safe bg-surface/90 dark:bg-surface/90 backdrop-blur-md border-t border-outline-variant z-50">
+<div class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-xs text-label-xs">Inbox</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="inbox">inbox</span>
+<span class="font-label-xs text-label-xs">Unread</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="bookmark">bookmark</span>
+<span class="font-label-xs text-label-xs">Saved</span>
+</div>
+<div class="flex flex-col items-center justify-center text-primary bg-secondary-container/50 rounded-xl px-3 py-1 scale-110 transition-transform duration-150">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+<span class="font-label-xs text-label-xs">Search</span>
+</div>
+</nav>
+</body></html>

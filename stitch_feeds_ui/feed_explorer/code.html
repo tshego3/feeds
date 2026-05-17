@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+                  "tertiary-fixed": "#eae1dd",
+                  "on-secondary-fixed-variant": "#474747",
+                  "on-primary-fixed": "#1a1c1c",
+                  "on-primary-fixed-variant": "#454747",
+                  "surface-container-high": "#2a2a2a",
+                  "on-secondary-container": "#b6b5b4",
+                  "on-error-container": "#ffdad6",
+                  "error-container": "#93000a",
+                  "surface-dim": "#131313",
+                  "surface-bright": "#393939",
+                  "on-secondary": "#303030",
+                  "primary-fixed": "#e2e2e2",
+                  "tertiary-fixed-dim": "#cec5c1",
+                  "primary-fixed-dim": "#c6c6c7",
+                  "tertiary-container": "#eae1dd",
+                  "surface": "#131313",
+                  "secondary": "#c8c6c6",
+                  "background": "#131313",
+                  "on-error": "#690005",
+                  "inverse-primary": "#5d5f5f",
+                  "on-tertiary-fixed": "#1f1b19",
+                  "on-secondary-fixed": "#1b1c1c",
+                  "tertiary": "#ffffff",
+                  "surface-tint": "#c6c6c7",
+                  "on-surface": "#e5e2e1",
+                  "on-primary": "#2f3131",
+                  "inverse-surface": "#e5e2e1",
+                  "surface-container": "#201f1f",
+                  "surface-container-lowest": "#0e0e0e",
+                  "on-tertiary-fixed-variant": "#4b4643",
+                  "on-background": "#e5e2e1",
+                  "secondary-fixed": "#e4e2e1",
+                  "primary": "#ffffff",
+                  "secondary-container": "#474747",
+                  "on-tertiary": "#342f2d",
+                  "surface-container-low": "#1c1b1b",
+                  "on-primary-container": "#636565",
+                  "on-tertiary-container": "#696360",
+                  "on-surface-variant": "#c4c7c8",
+                  "primary-container": "#e2e2e2",
+                  "outline": "#8e9192",
+                  "outline-variant": "#444748",
+                  "surface-variant": "#353534",
+                  "error": "#ffb4ab",
+                  "surface-container-highest": "#353534",
+                  "inverse-on-surface": "#313030",
+                  "secondary-fixed-dim": "#c8c6c6"
+          },
+          "borderRadius": {
+                  "DEFAULT": "0.25rem",
+                  "lg": "0.5rem",
+                  "xl": "0.75rem",
+                  "full": "9999px"
+          },
+          "spacing": {
+                  "section-gap": "48px",
+                  "gutter": "16px",
+                  "container-padding": "24px",
+                  "stack-gap": "12px",
+                  "unit": "4px"
+          },
+          "fontFamily": {
+                  "label-sm": ["Inter"],
+                  "body-lg": ["Inter"],
+                  "label-xs": ["Inter"],
+                  "headline-lg-mobile": ["Inter"],
+                  "headline-lg": ["Inter"],
+                  "body-md": ["Inter"],
+                  "headline-md": ["Inter"]
+          },
+          "fontSize": {
+                  "label-sm": ["13px", {"lineHeight": "1", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                  "body-lg": ["17px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}],
+                  "label-xs": ["11px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                  "headline-lg-mobile": ["24px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                  "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                  "body-md": ["15px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}],
+                  "headline-md": ["20px", {"lineHeight": "1.4", "letterSpacing": "-0.01em", "fontWeight": "500"}]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    body {
+      background-color: #131313;
+      color: #e5e2e1;
+      font-family: 'Inter', sans-serif;
+    }
+    .glass-card {
+      background: rgba(28, 28, 28, 0.8);
+      backdrop-filter: blur(20px);
+      border: 1px solid #444748;
+    }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #131313; }
+    ::-webkit-scrollbar-thumb { background: #444748; border-radius: 10px; }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="flex min-h-screen overflow-hidden">
+<!-- NavigationDrawer (Desktop Only) -->
+<aside class="hidden md:flex flex-col h-screen fixed left-0 top-0 overflow-y-auto w-72 bg-surface-container border-r border-outline-variant">
+<div class="p-8">
+<span class="font-headline-lg text-headline-lg font-bold tracking-tighter text-primary">feeds</span>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<div class="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-variant transition-colors duration-200">
+<span class="material-symbols-outlined">rss_feed</span>
+<span class="font-label-sm text-label-sm">All Feeds</span>
+</div>
+<div class="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-variant transition-colors duration-200">
+<span class="material-symbols-outlined">mark_as_unread</span>
+<span class="font-label-sm text-label-sm">Unread</span>
+</div>
+<div class="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-variant transition-colors duration-200">
+<span class="material-symbols-outlined">bookmark</span>
+<span class="font-label-sm text-label-sm">Bookmarks</span>
+</div>
+<!-- Active Tab: Discover (matching current page intent) -->
+<div class="flex items-center gap-4 px-4 py-3 bg-secondary-container text-primary border-l-2 border-primary opacity-90 transition-all scale-[0.99]">
+<span class="material-symbols-outlined">explore</span>
+<span class="font-label-sm text-label-sm">Discover</span>
+</div>
+<div class="flex items-center gap-4 px-4 py-3 text-on-surface-variant hover:bg-surface-variant transition-colors duration-200">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-sm text-label-sm">Settings</span>
+</div>
+</nav>
+</aside>
+<!-- Mobile TopAppBar -->
+<header class="flex md:hidden justify-between items-center px-4 py-3 w-full fixed top-0 z-40 bg-surface/80 backdrop-blur-xl border-b border-outline-variant">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="menu">menu</span>
+<span class="font-headline-md-mobile text-headline-md-mobile font-bold tracking-tighter text-primary">feeds</span>
+</div>
+<span class="material-symbols-outlined text-primary" data-icon="search">search</span>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 md:ml-72 mt-14 md:mt-0 overflow-y-auto h-screen">
+<div class="max-w-5xl mx-auto px-6 py-12 space-y-12 pb-32 md:pb-12">
+<!-- Search & Header Section -->
+<div class="space-y-6">
+<div class="flex flex-col gap-2">
+<h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">Explore</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-xl">Find and follow the best sources across the web. Curate your focus with precision.</p>
+</div>
+<div class="relative max-w-2xl">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-xl py-4 pl-12 pr-4 font-body-md text-on-surface focus:outline-none focus:border-outline transition-colors" placeholder="Search by name, URL, or topic..." type="text"/>
+</div>
+</div>
+<!-- Suggested Section (Bento Grid) -->
+<section class="space-y-6">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-md text-headline-md text-primary">Suggested for you</h2>
+<button class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary">View all</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<!-- Featured Large Card -->
+<div class="md:col-span-2 relative group overflow-hidden rounded-xl h-64 glass-card p-8 flex flex-col justify-end">
+<div class="absolute inset-0 opacity-20 transition-transform duration-500 group-hover:scale-110">
+<img class="w-full h-full object-cover" data-alt="A high-tech workspace with multiple glowing computer monitors displaying complex data and code. The scene is lit with cool blue and deep charcoal tones, reflecting a futuristic and hyper-productive atmosphere. The lighting is low and architectural, emphasizing sharp geometric lines and a clean, minimalist professional aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfOq1orRgXJ9S-pMHOgxrLdpgagKQn8_6xfEmv9N9rmCsciekA_kMZbJUevmL7VjS_MSujx_lhXe24B3Ir5yepPdgv3IorvXYMLIDP8T_IwDQ9Pfj4rQC_i1pyWfJeD862LfxuyMg7YCIFlIMMZwC9LTZF3e0Tmqwbh8pcn7DbyuUoUFswA3jU4hclsrn3rF1mEVq_W6V0F5ILggoWf23A94pcYC_Asv8EUYV_wAlpSRPzHZ4TedFetbBYzU9okqDrLGPANt-6Ju1e"/>
+</div>
+<div class="relative z-10 space-y-3">
+<span class="bg-primary text-on-primary font-label-xs text-label-xs px-2 py-1 rounded">TRENDING</span>
+<h3 class="font-headline-md text-headline-md text-primary">The Verge</h3>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">The intersection of technology, science, art, and culture.</p>
+<button class="bg-primary text-on-primary font-label-sm text-label-sm px-6 py-2 rounded-full w-fit hover:opacity-90 transition-opacity">Follow</button>
+</div>
+</div>
+<!-- Secondary Bento Card -->
+<div class="glass-card rounded-xl p-6 flex flex-col justify-between">
+<div class="space-y-4">
+<div class="w-12 h-12 rounded-lg bg-surface-container-highest flex items-center justify-center border border-outline-variant">
+<span class="material-symbols-outlined text-primary">palette</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-primary">Smashing Magazine</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Design &amp; UX</p>
+</div>
+</div>
+<button class="border border-outline-variant text-primary font-label-sm text-label-sm px-6 py-2 rounded-full w-full hover:bg-surface-variant transition-colors">Follow</button>
+</div>
+</div>
+</section>
+<!-- Category Lists -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-12">
+<!-- Technology Category -->
+<section class="space-y-4">
+<div class="flex items-center gap-2 pb-2 border-b border-outline-variant">
+<span class="material-symbols-outlined text-on-surface-variant">terminal</span>
+<h2 class="font-headline-md text-headline-md text-primary">Technology</h2>
+</div>
+<div class="divide-y divide-outline-variant/30">
+<div class="flex items-center justify-between py-4 group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-surface-container flex items-center justify-center font-bold text-primary">TC</div>
+<div>
+<p class="font-label-sm text-label-sm text-primary">TechCrunch</p>
+<p class="font-label-xs text-label-xs text-on-surface-variant">Startup news &amp; analysis</p>
+</div>
+</div>
+<button class="opacity-0 group-hover:opacity-100 font-label-xs text-label-xs text-primary border border-primary px-3 py-1 rounded transition-all">FOLLOW</button>
+</div>
+<div class="flex items-center justify-between py-4 group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-surface-container flex items-center justify-center font-bold text-primary">WI</div>
+<div>
+<p class="font-label-sm text-label-sm text-primary">Wired</p>
+<p class="font-label-xs text-label-xs text-on-surface-variant">Culture, Science, Gear</p>
+</div>
+</div>
+<button class="opacity-0 group-hover:opacity-100 font-label-xs text-label-xs text-primary border border-primary px-3 py-1 rounded transition-all">FOLLOW</button>
+</div>
+<div class="flex items-center justify-between py-4 group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-surface-container flex items-center justify-center font-bold text-primary">AH</div>
+<div>
+<p class="font-label-sm text-label-sm text-primary">Ars Technica</p>
+<p class="font-label-xs text-label-xs text-on-surface-variant">The PC enthusiast resource</p>
+</div>
+</div>
+<button class="opacity-0 group-hover:opacity-100 font-label-xs text-label-xs text-primary border border-primary px-3 py-1 rounded transition-all">FOLLOW</button>
+</div>
+</div>
+</section>
+<!-- Design Category -->
+<section class="space-y-4">
+<div class="flex items-center gap-2 pb-2 border-b border-outline-variant">
+<span class="material-symbols-outlined text-on-surface-variant">architecture</span>
+<h2 class="font-headline-md text-headline-md text-primary">Design</h2>
+</div>
+<div class="divide-y divide-outline-variant/30">
+<div class="flex items-center justify-between py-4 group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-surface-container flex items-center justify-center font-bold text-primary">DZ</div>
+<div>
+<p class="font-label-sm text-label-sm text-primary">Dezeen</p>
+<p class="font-label-xs text-label-xs text-on-surface-variant">Architecture &amp; Interior</p>
+</div>
+</div>
+<button class="opacity-0 group-hover:opacity-100 font-label-xs text-label-xs text-primary border border-primary px-3 py-1 rounded transition-all">FOLLOW</button>
+</div>
+<div class="flex items-center justify-between py-4 group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-surface-container flex items-center justify-center font-bold text-primary">DN</div>
+<div>
+<p class="font-label-sm text-label-sm text-primary">Design Milk</p>
+<p class="font-label-xs text-label-xs text-on-surface-variant">Modern design magazine</p>
+</div>
+</div>
+<button class="opacity-0 group-hover:opacity-100 font-label-xs text-label-xs text-primary border border-primary px-3 py-1 rounded transition-all">FOLLOW</button>
+</div>
+<div class="flex items-center justify-between py-4 group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-surface-container flex items-center justify-center font-bold text-primary">AD</div>
+<div>
+<p class="font-label-sm text-label-sm text-primary">Awwwards</p>
+<p class="font-label-xs text-label-xs text-on-surface-variant">Web Design trends</p>
+</div>
+</div>
+<button class="opacity-0 group-hover:opacity-100 font-label-xs text-label-xs text-primary border border-primary px-3 py-1 rounded transition-all">FOLLOW</button>
+</div>
+</div>
+</section>
+</div>
+<!-- Categories Tags -->
+<section class="space-y-6 pt-12">
+<h2 class="font-headline-md text-headline-md text-primary">Popular Categories</h2>
+<div class="flex flex-wrap gap-3">
+<span class="px-4 py-2 bg-surface-container border border-outline-variant rounded-full font-label-sm text-label-sm text-on-surface hover:bg-surface-variant cursor-pointer transition-colors">Politics</span>
+<span class="px-4 py-2 bg-surface-container border border-outline-variant rounded-full font-label-sm text-label-sm text-on-surface hover:bg-surface-variant cursor-pointer transition-colors">Finance</span>
+<span class="px-4 py-2 bg-surface-container border border-outline-variant rounded-full font-label-sm text-label-sm text-on-surface hover:bg-surface-variant cursor-pointer transition-colors">Science</span>
+<span class="px-4 py-2 bg-surface-container border border-outline-variant rounded-full font-label-sm text-label-sm text-on-surface hover:bg-surface-variant cursor-pointer transition-colors">Gaming</span>
+<span class="px-4 py-2 bg-surface-container border border-outline-variant rounded-full font-label-sm text-label-sm text-on-surface hover:bg-surface-variant cursor-pointer transition-colors">Sports</span>
+<span class="px-4 py-2 bg-surface-container border border-outline-variant rounded-full font-label-sm text-label-sm text-on-surface hover:bg-surface-variant cursor-pointer transition-colors">Productivity</span>
+<span class="px-4 py-2 bg-surface-container border border-outline-variant rounded-full font-label-sm text-label-sm text-on-surface hover:bg-surface-variant cursor-pointer transition-colors">AI &amp; ML</span>
+</div>
+</section>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full md:hidden flex justify-around items-center px-6 py-3 pb-safe bg-surface/90 backdrop-blur-md border-t border-outline-variant z-50">
+<div class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-xs text-label-xs">Inbox</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">inbox</span>
+<span class="font-label-xs text-label-xs">Unread</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">bookmark</span>
+<span class="font-label-xs text-label-xs">Saved</span>
+</div>
+<!-- Active Tab: Search (matching Explore/Discover intent) -->
+<div class="flex flex-col items-center justify-center text-primary bg-secondary-container/50 rounded-xl px-3 py-1 scale-110 transition-transform duration-150">
+<span class="material-symbols-outlined">search</span>
+<span class="font-label-xs text-label-xs">Search</span>
+</div>
+</nav>
+</body></html>

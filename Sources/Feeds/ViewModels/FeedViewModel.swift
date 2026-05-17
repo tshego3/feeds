@@ -22,9 +22,20 @@ class FeedViewModel: ObservableObject {
     @Published private(set) var selectedFeed: RssFeedModel?       // C#: RssFeedModel? SelectedFeed { get; set; }
     @Published private(set) var errorMessage: String?             // C#: string? ErrorMessage { get; set; }
     @Published private(set) var isLoading: Bool = false            // C#: bool IsLoading { get; set; }
+    @Published private(set) var readArticleLinks: Set<String> = [] // C#: HashSet<string> — tracks read article links
 
     /// Whether any feed items are available to display.
     var hasItems: Bool { !feedItems.isEmpty }
+
+    /// Articles not yet marked as read. C#: feedItems.Where(x => !readArticleLinks.Contains(x.Link)).ToList()
+    var unreadItems: [FeedItem] {
+        feedItems.filter { !readArticleLinks.contains($0.link) }
+    }
+
+    /// Marks an article as read by its link. C#: public void MarkAsRead(FeedItem item) { readArticleLinks.Add(item.Link); }
+    func markAsRead(_ item: FeedItem) {
+        readArticleLinks.insert(item.link)
+    }
 
     // MARK: - Load Config
 

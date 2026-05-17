@@ -372,15 +372,23 @@ feeds-swift-app/
    - Create a free Apple ID at [appleid.apple.com](https://appleid.apple.com) if you don't have one
    - Open Xcode → **Settings** (⌘,) → **Accounts** tab → click **+** → **Apple ID** → sign in with your Apple ID
    - Xcode automatically creates a free **Apple Development** signing certificate and registers your account as a Personal Team
-   - No enrollment or payment required — a standard Apple ID is sufficient for on-device development
+   - No enrollment or payment required - a standard Apple ID is sufficient for on-device development
    - To verify: select your Apple ID in the Accounts list → click **Manage Certificates** → you should see an "Apple Development" certificate
    - If the certificate is missing, click **+** in the Manage Certificates sheet → select **Apple Development** → Xcode generates and installs it into your Keychain
    - **Set up project signing**: generate the Xcode project (`xcodegen generate`) → open `Feeds.xcodeproj` → select the **Feeds** target → **Signing & Capabilities** tab
-   - Check **Automatically manage signing** (should already be enabled — `CODE_SIGN_STYLE: Automatic` is set in `project.yml`)
+   - Check **Automatically manage signing** (should already be enabled - `CODE_SIGN_STYLE: Automatic` is set in `project.yml`)
    - Set **Team** to your Personal Team (your Apple ID name with "(Personal Team)" suffix)
-   - Set **Bundle Identifier** to a unique reverse-DNS string (e.g. `com.yourname.Feeds`) — free accounts require a globally unique ID
-   - Xcode auto-generates a provisioning profile linking your certificate, bundle ID, and device — no manual profile creation needed
+   - Set **Bundle Identifier** to a unique reverse-DNS string (e.g. `com.yourname.Feeds`) - free accounts require a globally unique ID
+   - Xcode auto-generates a provisioning profile linking your certificate, bundle ID, and device - no manual profile creation needed
    - The signing identity (`CODE_SIGN_IDENTITY: "Apple Development"`) and style are pre-configured in `project.yml`, so re-running `xcodegen generate` preserves these settings
+   - **Configure device orientation**: select the **Feeds** target → **General** tab → scroll to **Deployment Info** → under **Device Orientation**, check all four:
+     - **Portrait** - standard upright orientation
+     - **Upside Down** - iPad only (Xcode grays this out for iPhone)
+     - **Landscape Left** - home button / gesture bar on the right
+     - **Landscape Right** - home button / gesture bar on the left
+   - These correspond to `INFOPLIST_KEY_UISupportedInterfaceOrientations` in `project.yml` - all four orientations are pre-configured
+   - **Set app category**: in the same **General** tab → **Identity** section → set **App Category** to **News** (maps to `INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.news` in `project.yml`)
+   - **Set version**: in **Identity** section → set **Version** to `0.1.0` and **Build** to `1` (maps to `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` in `project.yml`)
 
 1. **Register your device**: Connect via USB → open Xcode → Window → Devices and Simulators → your device appears automatically. Xcode registers the device ID with your Apple Developer account.
 

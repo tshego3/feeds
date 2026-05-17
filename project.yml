@@ -1,6 +1,6 @@
 name: Feeds
 options:
-  bundleIdPrefix: com.feeds
+  bundleIdPrefix: co.za.eoitech
   deploymentTarget:
     iOS: "17.0"
     macOS: "14.0"
@@ -19,11 +19,18 @@ targets:
         buildPhase: resources
     settings:
       INFOPLIST_KEY_UILaunchScreen_Generation: true
-      INFOPLIST_KEY_CFBundleDisplayName: Feeds
-      PRODUCT_BUNDLE_IDENTIFIER: com.feeds.Feeds
+      INFOPLIST_KEY_CFBundleDisplayName: feeds
+      INFOPLIST_KEY_LSApplicationCategoryType: "public.app-category.news"
+      INFOPLIST_KEY_UIStatusBarStyle: ""
+      INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown
+      ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: true
+      CURRENT_PROJECT_VERSION: 1
+      MARKETING_VERSION: 0.1.0
+      PRODUCT_BUNDLE_IDENTIFIER: co.za.eoitech.feeds
       SWIFT_STRICT_CONCURRENCY: complete
       CODE_SIGN_STYLE: Automatic
       CODE_SIGN_IDENTITY: "Apple Development"
+      DEVELOPMENT_TEAM: 53WGMXN227
   FeedsTests:
     type: bundle.unit-test
     platform: iOS
@@ -32,4 +39,5 @@ targets:
     dependencies:
       - target: Feeds
     settings:
-      PRODUCT_BUNDLE_IDENTIFIER: com.feeds.FeedsTests
+      PRODUCT_BUNDLE_IDENTIFIER: co.za.eoitech.feedstests
+      DEVELOPMENT_TEAM: 53WGMXN227

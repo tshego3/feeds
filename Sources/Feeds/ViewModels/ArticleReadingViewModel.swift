@@ -10,10 +10,12 @@ class ArticleReadingViewModel: ObservableObject {
 
     private let bookmarkViewModel: BookmarkViewModel
     let item: FeedItem
+    let feedTitle: String
 
-    init(item: FeedItem, bookmarkViewModel: BookmarkViewModel) {
+    init(item: FeedItem, bookmarkViewModel: BookmarkViewModel, feedTitle: String = "Source") {
         self.item = item
         self.bookmarkViewModel = bookmarkViewModel
+        self.feedTitle = feedTitle
         self.isBookmarked = bookmarkViewModel.isBookmarked(item)
     }
 

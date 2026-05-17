@@ -96,7 +96,7 @@ struct ArticleReadingView: View {
 
     private var metadataSection: some View {
         HStack(spacing: 8) {
-            Text("Source")
+            Text(viewModel.feedTitle)
                 .labelXSmall()
                 .foregroundColor(Theme.onSurface)
                 .padding(.horizontal, 10)
@@ -131,31 +131,32 @@ struct ArticleReadingView: View {
     private var heroImage: some View {
         Group {
             if let url = viewModel.item.displayImage {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 300)
-                            .clipped()
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Theme.outlineVariant, lineWidth: 1)
-                            )
-                    case .failure:
-                        EmptyView()
-                    case .empty:
-                        ProgressView()
-                            .frame(height: 300)
-                    @unknown default:
-                        EmptyView()
-                    }
-                }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 32)
+                Color.clear
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 300)
+                    .overlay(
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                            case .failure:
+                                EmptyView()
+                            case .empty:
+                                ProgressView()
+                            @unknown default:
+                                EmptyView()
+                            }
+                        }
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Theme.outlineVariant, lineWidth: 1)
+                    )
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 32)
             }
         }
     }

@@ -161,7 +161,8 @@ struct ContentView: View {
                         ArticleReadingView(
                             viewModel: ArticleReadingViewModel(
                                 item: item,
-                                bookmarkViewModel: bookmarkViewModel
+                                bookmarkViewModel: bookmarkViewModel,
+                                feedTitle: viewModel.selectedFeed?.title ?? "Source"
                             )
                         )
                         .onAppear { viewModel.markAsRead(item) }
@@ -179,7 +180,8 @@ struct ContentView: View {
                         ArticleReadingView(
                             viewModel: ArticleReadingViewModel(
                                 item: item,
-                                bookmarkViewModel: bookmarkViewModel
+                                bookmarkViewModel: bookmarkViewModel,
+                                feedTitle: viewModel.selectedFeed?.title ?? "Source"
                             )
                         )
                         .onAppear { viewModel.markAsRead(item) }
@@ -209,7 +211,8 @@ struct ContentView: View {
                         ArticleReadingView(
                             viewModel: ArticleReadingViewModel(
                                 item: item,
-                                bookmarkViewModel: bookmarkViewModel
+                                bookmarkViewModel: bookmarkViewModel,
+                                feedTitle: viewModel.selectedFeed?.title ?? "Source"
                             )
                         )
                         .onAppear { viewModel.markAsRead(item) }

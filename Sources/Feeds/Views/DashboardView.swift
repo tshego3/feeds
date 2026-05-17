@@ -174,24 +174,27 @@ struct FeaturedArticleCard: View {
         ZStack(alignment: .bottomLeading) {
             // Image
             if let url = item.displayImage {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    case .failure:
-                        fallbackImage
-                    case .empty:
-                        ProgressView()
-                            .frame(height: 380)
-                    @unknown default:
-                        EmptyView()
-                    }
-                }
-                .frame(maxWidth: .infinity, maxHeight: 380)
-                .clipped()
-                .saturation(0)
+                Color.clear
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 380)
+                    .overlay(
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                            case .failure:
+                                fallbackImage
+                            case .empty:
+                                ProgressView()
+                            @unknown default:
+                                EmptyView()
+                            }
+                        }
+                    )
+                    .clipped()
+                    .saturation(0)
             } else {
                 Theme.surfaceContainerLow
             }
@@ -283,23 +286,23 @@ struct ArticleCard: View {
         VStack(alignment: .leading, spacing: 12) {
             // Thumbnail
             if let url = item.displayImage {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(height: 140)
-                            .frame(maxWidth: .infinity)
-                            .contentShape(Rectangle())
-                            .clipped()
-                            .saturation(0)
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                    default:
-                        EmptyView()
-                    }
-                }
-                .frame(maxWidth: .infinity)
+                Color.clear
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 140)
+                    .overlay(
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .saturation(0)
+                            default:
+                                EmptyView()
+                            }
+                        }
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
             }
 
             Text(Helpers.formatDate(item.pubDate))
@@ -375,20 +378,23 @@ struct CompactArticleRow: View {
             Spacer()
 
             if let url = item.displayImage {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 80, height: 60)
-                            .saturation(0)
-                            .opacity(0.7)
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                    default:
-                        EmptyView()
-                    }
-                }
+                Color.clear
+                    .frame(width: 80, height: 60)
+                    .overlay(
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .saturation(0)
+                                    .opacity(0.7)
+                            default:
+                                EmptyView()
+                            }
+                        }
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
             }
         }
         .padding(16)

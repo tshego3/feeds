@@ -1,0 +1,7 @@
+{
+  "recommendations": [
+    "swiftlang.swift-lang",
+    "llvm-vs-code-extensions.lldb-dap",
+    "nickmessing.vscode-android-ios-emulator"
+  ]
+}

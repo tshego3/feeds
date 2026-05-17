@@ -1,0 +1,33 @@
+name: Feeds
+options:
+  bundleIdPrefix: com.feeds
+  deploymentTarget:
+    iOS: "17.0"
+    macOS: "14.0"
+settings:
+  SWIFT_VERSION: "6.0"
+  GENERATE_INFOPLIST_FILE: true
+targets:
+  Feeds:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources/Feeds
+        excludes:
+          - Resources/**
+      - path: Sources/Feeds/Resources
+        buildPhase: resources
+    settings:
+      INFOPLIST_KEY_UILaunchScreen_Generation: true
+      INFOPLIST_KEY_CFBundleDisplayName: Feeds
+      PRODUCT_BUNDLE_IDENTIFIER: com.feeds.Feeds
+      SWIFT_STRICT_CONCURRENCY: complete
+  FeedsTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Tests/FeedsTests
+    dependencies:
+      - target: Feeds
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.feeds.FeedsTests

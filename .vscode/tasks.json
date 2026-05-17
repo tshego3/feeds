@@ -1,0 +1,46 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build iOS",
+      "type": "shell",
+      "command": "swift build",
+      "group": "build"
+    },
+    {
+      "label": "Build Android (x86_64)",
+      "type": "shell",
+      "command": "swift build --swift-sdk x86_64-unknown-linux-android36 --static-swift-stdlib",
+      "group": "build"
+    },
+    {
+      "label": "Test iOS Simulator",
+      "type": "shell",
+      "command": "swift test",
+      "group": "test"
+    },
+    {
+      "label": "Test iOS Simulator (with coverage)",
+      "type": "shell",
+      "command": "swift test --enable-code-coverage",
+      "group": "test"
+    },
+    {
+      "label": "Deploy Android Emulator",
+      "type": "shell",
+      "command": "adb push .build/x86_64-unknown-linux-android36/debug/Feeds /data/local/tmp && adb push $ANDROID_NDK_HOME/toolchains/llvm/prebuilt/*/sysroot/usr/lib/x86_64-linux-android/libc++_shared.so /data/local/tmp/ && adb shell /data/local/tmp/Feeds",
+      "group": "test",
+      "dependsOn": "Build Android (x86_64)"
+    },
+    {
+      "label": "Launch iOS Simulator",
+      "type": "shell",
+      "command": "xcrun simctl boot \"iPhone 17\" 2>/dev/null; open -a Simulator"
+    },
+    {
+      "label": "Launch Android Emulator",
+      "type": "shell",
+      "command": "emulator -avd $(emulator -list-avds | head -1) &"
+    }
+  ]
+}

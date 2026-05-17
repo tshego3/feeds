@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:feeds-swift-app}",
+            "name": "Debug Feeds",
+            "target": "Feeds",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug Feeds"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:feeds-swift-app}",
+            "name": "Release Feeds",
+            "target": "Feeds",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release Feeds"
+        }
+    ]
+}

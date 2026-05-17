@@ -140,73 +140,29 @@ extension ThemeColors {
     )
 }
 
-// MARK: - Theme Accessor (Monolithic Clarity Design System)
+// MARK: - Theme Environment Key
+
+private struct ThemeColorsKey: EnvironmentKey {
+    static let defaultValue: ThemeColors = .dark
+}
+
+extension EnvironmentValues {
+    var themeColors: ThemeColors {
+        get { self[ThemeColorsKey.self] }
+        set { self[ThemeColorsKey.self] = newValue }
+    }
+}
+
+// MARK: - Theme Resolution
 
 enum Theme {
-
-    nonisolated(unsafe) static var current: ThemeColors = .monochrome
-
-    static func apply(_ theme: String) {
-        switch theme {
-        case "Light": current = .light
-        case "Dark": current = .dark
-        case "Monochrome": current = .monochrome
-        default: current = .dark
+    static func resolve(_ name: String) -> ThemeColors {
+        switch name {
+        case "Light": return .light
+        case "Monochrome": return .monochrome
+        default: return .dark
         }
     }
-
-    // MARK: - Surface Colors (Tonal Depth Layers)
-
-    static var background: Color { current.background }
-    static var surface: Color { current.surface }
-    static var surfaceDim: Color { current.surfaceDim }
-    static var surfaceBright: Color { current.surfaceBright }
-    static var surfaceContainerLowest: Color { current.surfaceContainerLowest }
-    static var surfaceContainerLow: Color { current.surfaceContainerLow }
-    static var surfaceContainer: Color { current.surfaceContainer }
-    static var surfaceContainerHigh: Color { current.surfaceContainerHigh }
-    static var surfaceContainerHighest: Color { current.surfaceContainerHighest }
-    static var surfaceVariant: Color { current.surfaceVariant }
-
-    // MARK: - Content Colors
-
-    static var onSurface: Color { current.onSurface }
-    static var onSurfaceVariant: Color { current.onSurfaceVariant }
-    static var onBackground: Color { current.onBackground }
-
-    // MARK: - Primary
-
-    static var primary: Color { current.primary }
-    static var onPrimary: Color { current.onPrimary }
-    static var primaryContainer: Color { current.primaryContainer }
-    static var onPrimaryContainer: Color { current.onPrimaryContainer }
-
-    // MARK: - Secondary
-
-    static var secondary: Color { current.secondary }
-    static var onSecondary: Color { current.onSecondary }
-    static var secondaryContainer: Color { current.secondaryContainer }
-    static var onSecondaryContainer: Color { current.onSecondaryContainer }
-
-    // MARK: - Outline
-
-    static var outline: Color { current.outline }
-    static var outlineVariant: Color { current.outlineVariant }
-
-    // MARK: - Error
-
-    static var error: Color { current.error }
-    static var onError: Color { current.onError }
-    static var errorContainer: Color { current.errorContainer }
-
-    // MARK: - Inverse
-
-    static var inverseSurface: Color { current.inverseSurface }
-    static var inverseOnSurface: Color { current.inverseOnSurface }
-
-    // MARK: - Derived
-
-    static var isDark: Bool { current.isDark }
 }
 
 // MARK: - Hex Color Extension

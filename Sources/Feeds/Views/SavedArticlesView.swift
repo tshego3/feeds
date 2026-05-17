@@ -5,7 +5,9 @@ import SwiftUI
 struct SavedArticlesView: View {
     @EnvironmentObject private var bookmarks: BookmarkViewModel
     @State private var selectedTag = "#all"
+    @Environment(\.themeColors) private var theme
 
+    // TODO: Replace hardcoded tags with dynamic tags derived from saved articles
     private let tags = ["#all", "#readlater", "#research", "#design", "#tech"]
 
     private var filteredArticles: [SavedArticle] {
@@ -20,7 +22,7 @@ struct SavedArticlesView: View {
             }
             .padding(.bottom, 80)
         }
-        .background(Theme.background)
+        .background(theme.background)
     }
 
     // MARK: - Header
@@ -29,7 +31,7 @@ struct SavedArticlesView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Saved")
                 .headlineLarge()
-                .foregroundColor(Theme.primary)
+                .foregroundColor(theme.primary)
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
@@ -39,10 +41,10 @@ struct SavedArticlesView: View {
                         } label: {
                             Text(tag)
                                 .labelXSmall()
-                                .foregroundColor(selectedTag == tag ? Theme.onPrimary : Theme.onSurfaceVariant)
+                                .foregroundColor(selectedTag == tag ? theme.onPrimary : theme.onSurfaceVariant)
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 8)
-                                .background(selectedTag == tag ? Theme.primary : Theme.surfaceContainerHigh)
+                                .background(selectedTag == tag ? theme.primary : theme.surfaceContainerHigh)
                                 .clipShape(Capsule())
                         }
                         .buttonStyle(.plain)
@@ -76,13 +78,13 @@ struct SavedArticlesView: View {
         VStack(spacing: 16) {
             Image(systemName: "bookmark")
                 .font(.system(size: 40))
-                .foregroundColor(Theme.onSurfaceVariant)
+                .foregroundColor(theme.onSurfaceVariant)
             Text("No saved articles yet.")
                 .headlineMedium()
-                .foregroundColor(Theme.primary)
+                .foregroundColor(theme.primary)
             Text("Bookmark articles from your feeds to save them here for later reading.")
                 .bodyMedium()
-                .foregroundColor(Theme.onSurfaceVariant)
+                .foregroundColor(theme.onSurfaceVariant)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 48)
         }
@@ -94,50 +96,50 @@ struct SavedArticlesView: View {
             HStack {
                 Text(article.source.uppercased())
                     .labelXSmall()
-                    .foregroundColor(Theme.onSurfaceVariant)
+                    .foregroundColor(theme.onSurfaceVariant)
                     .tracking(1)
                 Spacer()
                 Button { bookmarks.remove(article) } label: {
                     Image(systemName: "bookmark.slash")
-                        .foregroundColor(Theme.onSurfaceVariant)
+                        .foregroundColor(theme.onSurfaceVariant)
                 }
                 .buttonStyle(.plain)
             }
 
             Text(article.title)
                 .headlineMedium()
-                .foregroundColor(Theme.primary)
+                .foregroundColor(theme.primary)
                 .lineLimit(2)
 
             if !article.description.isEmpty {
                 Text(article.description)
                     .bodyMedium()
-                    .foregroundColor(Theme.onSurfaceVariant)
+                    .foregroundColor(theme.onSurfaceVariant)
                     .lineLimit(3)
             }
 
             HStack(spacing: 12) {
                 Text("#\(article.tag)")
                     .labelXSmall()
-                    .foregroundColor(Theme.onSurfaceVariant)
+                    .foregroundColor(theme.onSurfaceVariant)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 4)
-                    .background(Theme.surfaceVariant)
+                    .background(theme.surfaceVariant)
                     .clipShape(RoundedRectangle(cornerRadius: 4))
 
                 if !article.readingTime.isEmpty {
                     Text(article.readingTime)
                         .labelXSmall()
-                        .foregroundColor(Theme.outline)
+                        .foregroundColor(theme.outline)
                 }
             }
         }
         .padding(20)
-        .background(Theme.surfaceContainerLow)
+        .background(theme.surfaceContainerLow)
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Theme.outlineVariant.opacity(0.2), lineWidth: 1)
+                .stroke(theme.outlineVariant.opacity(0.2), lineWidth: 1)
         )
     }
 }

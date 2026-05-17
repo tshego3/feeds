@@ -40,6 +40,7 @@ private struct AppRootView: View {
     var body: some View {
         ContentView()
             .preferredColorScheme(preferredScheme)
+            .environment(\.themeColors, settings.themeColors)
             .onChange(of: systemColorScheme) { _, newScheme in
                 guard settings.selectedTheme == "Auto" else { return }
                 settings.applyAutoTheme(systemIsDark: newScheme == .dark)

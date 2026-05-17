@@ -4,6 +4,7 @@ import SwiftUI
 /// Matches the dashboard/code.html design.
 struct DashboardView: View {
     @ObservedObject var viewModel: FeedViewModel
+    @Environment(\.themeColors) private var theme
     var filterUnreadOnly: Bool = false
 
     private var displayItems: [FeedItem] {
@@ -20,7 +21,10 @@ struct DashboardView: View {
             }
             .padding(.bottom, 80)
         }
-        .background(Theme.background)
+        .refreshable {
+            await viewModel.refreshFeed()
+        }
+        .background(theme.background)
     }
 
     // MARK: - Header
@@ -41,11 +45,11 @@ struct DashboardView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(headerTitle)
                 .headlineLarge()
-                .foregroundColor(Theme.primary)
+                .foregroundColor(theme.primary)
 
             Text(headerSubtitle)
                 .labelXSmall()
-                .foregroundColor(Theme.onSurfaceVariant)
+                .foregroundColor(theme.onSurfaceVariant)
                 .textCase(.uppercase)
         }
         .padding(.horizontal, 24)
@@ -122,10 +126,10 @@ struct DashboardView: View {
         VStack(spacing: 16) {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 40))
-                .foregroundColor(Theme.onSurfaceVariant)
+                .foregroundColor(theme.onSurfaceVariant)
             Text(message)
                 .bodyMedium()
-                .foregroundColor(Theme.onSurfaceVariant)
+                .foregroundColor(theme.onSurfaceVariant)
                 .multilineTextAlignment(.center)
             Button("Try Again") {
                 Task {
@@ -136,8 +140,8 @@ struct DashboardView: View {
             }
             .padding(.horizontal, 24)
             .padding(.vertical, 10)
-            .background(Theme.primary)
-            .foregroundColor(Theme.onPrimary)
+            .background(theme.primary)
+            .foregroundColor(theme.onPrimary)
             .clipShape(Capsule())
             .labelSmall()
         }
@@ -148,15 +152,15 @@ struct DashboardView: View {
         VStack(spacing: 16) {
             Image(systemName: "tray")
                 .font(.system(size: 40))
-                .foregroundColor(Theme.onSurfaceVariant)
+                .foregroundColor(theme.onSurfaceVariant)
             Text("No articles found.")
                 .headlineMedium()
-                .foregroundColor(Theme.primary)
+                .foregroundColor(theme.primary)
             Text(filterUnreadOnly
                 ? "You're all caught up! No unread articles."
                 : "Select a feed from the sidebar to get started.")
                 .bodyMedium()
-                .foregroundColor(Theme.onSurfaceVariant)
+                .foregroundColor(theme.onSurfaceVariant)
         }
         .frame(maxWidth: .infinity, minHeight: 300)
     }
@@ -167,6 +171,7 @@ struct DashboardView: View {
 struct FeaturedArticleCard: View {
     let item: FeedItem
     @EnvironmentObject private var bookmarks: BookmarkViewModel
+    @Environment(\.themeColors) private var theme
 
     private var hasImage: Bool { item.displayImage != nil }
 
@@ -196,12 +201,12 @@ struct FeaturedArticleCard: View {
                     .clipped()
                     .saturation(0)
             } else {
-                Theme.surfaceContainerLow
+                theme.surfaceContainerLow
             }
 
             // Gradient overlay
             LinearGradient(
-                colors: [Theme.background, Theme.background.opacity(0.4), .clear],
+                colors: [theme.background, theme.background.opacity(0.4), .clear],
                 startPoint: .bottom,
                 endPoint: .top
             )
@@ -210,21 +215,21 @@ struct FeaturedArticleCard: View {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 12) {
                     Circle()
-                        .fill(Theme.primary)
+                        .fill(theme.primary)
                         .frame(width: 8, height: 8)
                     Text(Helpers.formatDate(item.pubDate))
                         .labelXSmall()
-                        .foregroundColor(Theme.onSurfaceVariant)
+                        .foregroundColor(theme.onSurfaceVariant)
                 }
 
                 Text(item.title)
                     .headlineLarge()
-                    .foregroundColor(Theme.primary)
+                    .foregroundColor(theme.primary)
                     .lineLimit(3)
 
                 Text(item.plainDescription)
                     .bodyLarge()
-                    .foregroundColor(Theme.onSurfaceVariant)
+                    .foregroundColor(theme.onSurfaceVariant)
                     .lineLimit(2)
 
                 HStack {
@@ -238,22 +243,24 @@ struct FeaturedArticleCard: View {
                             }
                             .padding(.horizontal, 16)
                             .padding(.vertical, 10)
-                            .background(Theme.primary)
-                            .foregroundColor(Theme.onPrimary)
+                            .background(theme.primary)
+                            .foregroundColor(theme.onPrimary)
                             .clipShape(Capsule())
                         }
                     }
                     Spacer()
                     Button { bookmarks.toggle(item) } label: {
                         Image(systemName: bookmarks.isBookmarked(item) ? "bookmark.fill" : "bookmark")
-                            .foregroundColor(bookmarks.isBookmarked(item) ? Theme.primary : Theme.onSurfaceVariant)
+                            .foregroundColor(bookmarks.isBookmarked(item) ? theme.primary : theme.onSurfaceVariant)
                     }
                     .buttonStyle(.plain)
-                    Button { } label: {
-                        Image(systemName: "square.and.arrow.up")
-                            .foregroundColor(Theme.onSurfaceVariant)
+                    if let url = URL(string: item.link) {
+                        ShareLink(item: url) {
+                            Image(systemName: "square.and.arrow.up")
+                                .foregroundColor(theme.onSurfaceVariant)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
             }
             .padding(24)
@@ -264,13 +271,13 @@ struct FeaturedArticleCard: View {
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Theme.outlineVariant, lineWidth: 1)
+                .stroke(theme.outlineVariant, lineWidth: 1)
         )
     }
 
     private var fallbackImage: some View {
         Rectangle()
-            .fill(Theme.surfaceContainerLow)
+            .fill(theme.surfaceContainerLow)
             .frame(maxWidth: .infinity)
             .frame(height: 380)
     }
@@ -281,6 +288,7 @@ struct FeaturedArticleCard: View {
 struct ArticleCard: View {
     let item: FeedItem
     @EnvironmentObject private var bookmarks: BookmarkViewModel
+    @Environment(\.themeColors) private var theme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -288,7 +296,7 @@ struct ArticleCard: View {
             if let url = item.displayImage {
                 Color.clear
                     .frame(maxWidth: .infinity)
-                    .frame(height: 140)
+                    .frame(height: 180)
                     .overlay(
                         AsyncImage(url: url) { phase in
                             switch phase {
@@ -307,17 +315,17 @@ struct ArticleCard: View {
 
             Text(Helpers.formatDate(item.pubDate))
                 .labelXSmall()
-                .foregroundColor(Theme.onSurfaceVariant)
+                .foregroundColor(theme.onSurfaceVariant)
                 .textCase(.uppercase)
 
             Text(item.title)
                 .headlineMedium()
-                .foregroundColor(Theme.primary)
-                .lineLimit(2)
+                .foregroundColor(theme.primary)
+                .lineLimit(3)
 
             Text(item.plainDescription)
                 .bodyMedium()
-                .foregroundColor(Theme.onSurfaceVariant)
+                .foregroundColor(theme.onSurfaceVariant)
                 .lineLimit(2)
 
             HStack {
@@ -328,7 +336,7 @@ struct ArticleCard: View {
                         Text("Summary")
                             .labelXSmall()
                     }
-                    .foregroundColor(Theme.onSurfaceVariant)
+                    .foregroundColor(theme.onSurfaceVariant)
                 }
                 .buttonStyle(.plain)
 
@@ -337,17 +345,17 @@ struct ArticleCard: View {
                 Button { bookmarks.toggle(item) } label: {
                     Image(systemName: bookmarks.isBookmarked(item) ? "bookmark.fill" : "bookmark")
                         .font(.system(size: 16))
-                        .foregroundColor(bookmarks.isBookmarked(item) ? Theme.primary : Theme.onSurfaceVariant)
+                        .foregroundColor(bookmarks.isBookmarked(item) ? theme.primary : theme.onSurfaceVariant)
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(20)
-        .background(Theme.surfaceContainerLow)
+        .padding(16)
+        .background(theme.surfaceContainerLow)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Theme.outlineVariant, lineWidth: 1)
+                .stroke(theme.outlineVariant, lineWidth: 1)
         )
     }
 }
@@ -356,22 +364,23 @@ struct ArticleCard: View {
 
 struct CompactArticleRow: View {
     let item: FeedItem
+    @Environment(\.themeColors) private var theme
 
     var body: some View {
         HStack(spacing: 16) {
             VStack(alignment: .leading, spacing: 6) {
                 Text(Helpers.formatDate(item.pubDate))
                     .labelXSmall()
-                    .foregroundColor(Theme.onSurfaceVariant)
+                    .foregroundColor(theme.onSurfaceVariant)
 
                 Text(item.title)
                     .headlineMedium()
-                    .foregroundColor(Theme.primary)
+                    .foregroundColor(theme.primary)
                     .lineLimit(2)
 
                 Text(item.plainDescription)
                     .bodyMedium()
-                    .foregroundColor(Theme.onSurfaceVariant)
+                    .foregroundColor(theme.onSurfaceVariant)
                     .lineLimit(1)
             }
 
@@ -398,11 +407,11 @@ struct CompactArticleRow: View {
             }
         }
         .padding(16)
-        .background(Theme.surfaceContainerLow)
+        .background(theme.surfaceContainerLow)
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Theme.outlineVariant.opacity(0.3), lineWidth: 1)
+                .stroke(theme.outlineVariant.opacity(0.3), lineWidth: 1)
         )
     }
 }

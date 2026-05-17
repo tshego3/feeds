@@ -6,6 +6,7 @@ struct SettingsView: View {
     @EnvironmentObject private var settings: SettingsViewModel
     @ObservedObject var feedViewModel: FeedViewModel
     @State private var showExportSheet = false
+    @Environment(\.themeColors) private var theme
 
     var body: some View {
         ScrollView {
@@ -20,9 +21,9 @@ struct SettingsView: View {
             .padding(.bottom, 80)
         }
         .frame(maxWidth: .infinity)
-        .background(Theme.background)
+        .background(theme.background)
         .sheet(isPresented: $showExportSheet) {
-            let opml = generateOPML()
+            let opml = feedViewModel.generateOPML()
             ShareSheet(activityItems: [opml])
         }
     }
@@ -33,10 +34,10 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Settings")
                 .headlineLarge()
-                .foregroundColor(Theme.primary)
+                .foregroundColor(theme.primary)
             Text("Configure your reading experience and account preferences.")
                 .bodyMedium()
-                .foregroundColor(Theme.onSurfaceVariant)
+                .foregroundColor(theme.onSurfaceVariant)
         }
         .padding(.horizontal, 24)
         .padding(.top, 32)
@@ -48,21 +49,21 @@ struct SettingsView: View {
         settingsSection(title: "Account") {
             HStack(spacing: 16) {
                 Circle()
-                    .fill(Theme.surfaceContainerHighest)
+                    .fill(theme.surfaceContainerHighest)
                     .frame(width: 48, height: 48)
                     .overlay(
                     Image(systemName: "person.fill")
                             .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(Theme.primary)
+                            .foregroundColor(theme.primary)
                     )
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Guest")
                         .headlineMedium()
-                        .foregroundColor(Theme.primary)
+                        .foregroundColor(theme.primary)
                     Text("Local only — no account")
                         .labelSmall()
-                        .foregroundColor(Theme.onSurfaceVariant)
+                        .foregroundColor(theme.onSurfaceVariant)
                 }
 
                 Spacer()
@@ -71,8 +72,8 @@ struct SettingsView: View {
                     .labelSmall()
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
-                    .background(Theme.primary)
-                    .foregroundColor(Theme.onPrimary)
+                    .background(theme.primary)
+                    .foregroundColor(theme.onPrimary)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                     .buttonStyle(.plain)
             }
@@ -104,8 +105,8 @@ struct SettingsView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
-                    .background(Theme.surfaceContainerHigh)
-                    .foregroundColor(Theme.onSurface)
+                    .background(theme.surfaceContainerHigh)
+                    .foregroundColor(theme.onSurface)
                     .clipShape(Capsule())
                 }
                 .buttonStyle(.plain)
@@ -163,13 +164,13 @@ struct SettingsView: View {
                     .overlay(
                         RoundedRectangle(cornerRadius: 8)
                             .stroke(
-                                settings.selectedTheme == "Auto" ? Theme.primary : Color.clear,
+                                settings.selectedTheme == "Auto" ? theme.primary : Color.clear,
                                 lineWidth: 2
                             )
                     )
                 Text("Auto")
                     .labelXSmall()
-                    .foregroundColor(settings.selectedTheme == "Auto" ? Theme.primary : Theme.onSurfaceVariant)
+                    .foregroundColor(settings.selectedTheme == "Auto" ? theme.primary : theme.onSurfaceVariant)
             }
         }
         .buttonStyle(.plain)
@@ -196,13 +197,13 @@ struct SettingsView: View {
                     .overlay(
                         RoundedRectangle(cornerRadius: 8)
                             .stroke(
-                                settings.selectedTheme == name ? Theme.primary : Color.clear,
+                                settings.selectedTheme == name ? theme.primary : Color.clear,
                                 lineWidth: 2
                             )
                     )
                 Text(name)
                     .labelXSmall()
-                    .foregroundColor(settings.selectedTheme == name ? Theme.primary : Theme.onSurfaceVariant)
+                    .foregroundColor(settings.selectedTheme == name ? theme.primary : theme.onSurfaceVariant)
             }
         }
         .buttonStyle(.plain)
@@ -219,12 +220,20 @@ struct SettingsView: View {
                     isOn: $settings.autoRefresh
                 )
 
-                Rectangle().fill(Theme.outlineVariant).frame(height: 1)
+                Rectangle().fill(theme.outlineVariant).frame(height: 1)
 
                 preferenceToggle(
                     title: "Mark as Read on Scroll",
                     subtitle: "Automatically clear items as they leave the viewport",
                     isOn: $settings.markReadOnScroll
+                )
+
+                Rectangle().fill(theme.outlineVariant).frame(height: 1)
+
+                preferenceToggle(
+                    title: "Show AI Summaries",
+                    subtitle: "Display AI-generated article summaries in the reader",
+                    isOn: $settings.showAISummaries
                 )
             }
             .glassPanel()
@@ -236,15 +245,15 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .bodyMedium()
-                    .foregroundColor(Theme.onSurface)
+                    .foregroundColor(theme.onSurface)
                 Text(subtitle)
                     .labelXSmall()
-                    .foregroundColor(Theme.onSurfaceVariant)
+                    .foregroundColor(theme.onSurfaceVariant)
             }
             Spacer()
             Toggle("", isOn: isOn)
                 .labelsHidden()
-                .tint(Theme.primary)
+                .tint(theme.primary)
         }
         .padding(16)
     }
@@ -257,15 +266,15 @@ struct SettingsView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     Image(systemName: "arrow.down.doc")
                         .font(.system(size: 28))
-                        .foregroundColor(Theme.primary)
+                        .foregroundColor(theme.primary)
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Export OPML")
                             .headlineMedium()
-                            .foregroundColor(Theme.primary)
+                            .foregroundColor(theme.primary)
                         Text("Download your feed list as OPML")
                             .labelXSmall()
-                            .foregroundColor(Theme.onSurfaceVariant)
+                            .foregroundColor(theme.onSurfaceVariant)
                     }
                 }
                 .padding(20)
@@ -280,54 +289,19 @@ struct SettingsView: View {
 
     private var footerSection: some View {
         VStack(spacing: 8) {
-            Text("feeds v0.1.0")
+            Text("feeds v\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.0.0")")
                 .headlineMedium()
-                .foregroundColor(Theme.primary.opacity(0.2))
+                .foregroundColor(theme.primary.opacity(0.2))
         }
         .frame(maxWidth: .infinity)
         .padding(.top, 32)
         .padding(.bottom, 32)
         .overlay(alignment: .top) {
             Rectangle()
-                .fill(Theme.outlineVariant)
+                .fill(theme.outlineVariant)
                 .frame(height: 1)
         }
         .padding(.horizontal, 24)
-    }
-
-    // MARK: - OPML Export
-
-    private func generateOPML() -> String {
-        var lines = [
-            """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <opml version="2.0">
-            <head><title>feeds export</title></head>
-            <body>
-            """
-        ]
-        for item in feedViewModel.menuItems {
-            switch item {
-            case .single(let feed):
-                lines.append("  <outline text=\"\(escapeXML(feed.title))\" xmlUrl=\"\(escapeXML(feed.url))\" type=\"rss\"/>")
-            case .group(_, let title, let feeds):
-                lines.append("  <outline text=\"\(escapeXML(title))\">")
-                for feed in feeds {
-                    lines.append("    <outline text=\"\(escapeXML(feed.title))\" xmlUrl=\"\(escapeXML(feed.url))\" type=\"rss\"/>")
-                }
-                lines.append("  </outline>")
-            }
-        }
-        lines.append("</body>\n</opml>")
-        return lines.joined(separator: "\n")
-    }
-
-    private func escapeXML(_ string: String) -> String {
-        string
-            .replacingOccurrences(of: "&", with: "&amp;")
-            .replacingOccurrences(of: "<", with: "&lt;")
-            .replacingOccurrences(of: ">", with: "&gt;")
-            .replacingOccurrences(of: "\"", with: "&quot;")
     }
 
     // MARK: - Helpers
@@ -336,7 +310,7 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(title.uppercased())
                 .labelSmall()
-                .foregroundColor(Theme.primary.opacity(0.5))
+                .foregroundColor(theme.primary.opacity(0.5))
                 .tracking(2)
             content()
         }
@@ -346,14 +320,22 @@ struct SettingsView: View {
 
 // MARK: - Glass Panel Modifier
 
-extension View {
-    func glassPanel() -> some View {
-        self
-            .background(Theme.surfaceContainerLow.opacity(0.8))
+struct GlassPanelModifier: ViewModifier {
+    @Environment(\.themeColors) private var theme
+
+    func body(content: Content) -> some View {
+        content
+            .background(theme.surfaceContainerLow.opacity(0.8))
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Theme.outlineVariant, lineWidth: 1)
+                    .stroke(theme.outlineVariant, lineWidth: 1)
             )
+    }
+}
+
+extension View {
+    func glassPanel() -> some View {
+        self.modifier(GlassPanelModifier())
     }
 }

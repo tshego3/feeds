@@ -20,17 +20,22 @@ enum FeedError: Error {
     case feedUnavailable(status: Int) // C#: new HttpRequestException(statusCode)
 }
 
+// MARK: - Feed Service Protocol
+
+protocol FeedServiceProtocol: Sendable {
+    func fetchFeed(url: String) async throws -> [FeedItem]
+}
+
 // MARK: - Feed Service
 
-/// Fetches and parses RSS feeds. C#: public class FeedService { }
-/// "actor" or "class" could be used, but a simple enum with static methods works here.
-/// In Swift, free functions and static methods are idiomatic — no need to wrap everything in a class.
-enum FeedService {
+struct FeedService: FeedServiceProtocol {
 
-    // "static func" = C# "public static async Task<List<FeedItem>>"
-    // "async throws" = C# "async" + the method can throw (like Task that may fault).
-    // "-> [FeedItem]" = return type. "[T]" = List<T>.
-    static func fetchFeed(url: String) async throws -> [FeedItem] {
+    private static let proxyBaseURLs = [
+        "https://rss-proxy-api.netlify.app/.netlify/functions/fetch-xml?url=",
+        "https://api.codetabs.com/v1/proxy/?quest=",
+    ]
+
+    func fetchFeed(url: String) async throws -> [FeedItem] {
         // "guard let" = early return if nil — C#: if (x is not Type val) return;
         guard let feedURL = URL(string: url) else {
             throw FeedError.parsingError
@@ -49,12 +54,8 @@ enum FeedService {
         logger.debug("Direct fetch failed for \(url, privacy: .public), trying proxy services")
 
         // Proxy fallback — try proxies if direct fetch failed
-        let proxyURLs = [
-            "https://rss-proxy-api.netlify.app/.netlify/functions/fetch-xml?url=\(feedURL.absoluteString)",
-            "https://api.codetabs.com/v1/proxy/?quest=\(feedURL.absoluteString)",
-        ]
+        let proxyURLs = Self.proxyBaseURLs.map { $0 + feedURL.absoluteString }
 
-        // "for ... in" loop — same concept as C# foreach.
         for proxyString in proxyURLs {
             if let proxyURL = URL(string: proxyString) {
                 var request = URLRequest(url: proxyURL)

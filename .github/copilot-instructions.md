@@ -51,6 +51,7 @@ These rules are mandatory for all feature work, bug fixes, and refactors in this
 3. Never log sensitive user data or authentication tokens.
 4. Validate all external input (URL strings, JSON payloads) before use.
 5. Use `URL(string:)` (returns optional) instead of force-constructing URLs.
+6. **Vet all dependencies before adoption.** Before adding any package or dependency: (a) verify it exists on an official package manager (Swift Package Index, npm, PyPI, crates.io, etc.), (b) confirm the publisher/organization is legitimate, (c) check for known CVEs or security advisories, (d) review the dependency's GitHub stars, maintenance activity, and last commit date, (e) prefer dependencies with a clear license (MIT, Apache 2.0). Do not blindly trust AI-suggested package names — they may not exist or may be typosquatted.
 
 ## 7) UI and Design Rules
 

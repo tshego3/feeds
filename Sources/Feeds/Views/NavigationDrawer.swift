@@ -7,6 +7,7 @@ struct NavigationDrawer: View {
     @Binding var selectedTab: AppTab
     @ObservedObject var viewModel: FeedViewModel
     @State private var expandedGroups: Set<String> = []
+    @Environment(\.themeColors) private var theme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -14,7 +15,7 @@ struct NavigationDrawer: View {
             Text("feeds")
                 .font(.system(size: 32, weight: .bold))
                 .tracking(-1.5)
-                .foregroundColor(Theme.primary)
+                .foregroundColor(theme.primary)
                 .padding(.horizontal, 24)
                 .padding(.top, 32)
                 .padding(.bottom, 24)
@@ -26,7 +27,7 @@ struct NavigationDrawer: View {
 
             // Feed list divider
             Rectangle()
-                .fill(Theme.outlineVariant.opacity(0.3))
+                .fill(theme.outlineVariant.opacity(0.3))
                 .frame(height: 1)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
@@ -34,7 +35,7 @@ struct NavigationDrawer: View {
             // Feeds label
             Text("FEEDS")
                 .labelXSmall()
-                .foregroundColor(Theme.onSurfaceVariant.opacity(0.5))
+                .foregroundColor(theme.onSurfaceVariant.opacity(0.5))
                 .tracking(2)
                 .padding(.horizontal, 24)
                 .padding(.bottom, 8)
@@ -57,7 +58,7 @@ struct NavigationDrawer: View {
 
             // Divider before settings
             Rectangle()
-                .fill(Theme.outlineVariant.opacity(0.3))
+                .fill(theme.outlineVariant.opacity(0.3))
                 .frame(height: 1)
                 .padding(.horizontal, 16)
 
@@ -65,7 +66,7 @@ struct NavigationDrawer: View {
                 .padding(.bottom, 16)
         }
         .frame(width: 272)
-        .background(Theme.surfaceContainer)
+        .background(theme.surfaceContainer)
     }
 
     // MARK: - Nav Item
@@ -84,12 +85,12 @@ struct NavigationDrawer: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .foregroundColor(isActive ? Theme.primary : Theme.onSurfaceVariant)
-            .background(isActive ? Theme.secondaryContainer : Color.clear)
+            .foregroundColor(isActive ? theme.primary : theme.onSurfaceVariant)
+            .background(isActive ? theme.secondaryContainer : Color.clear)
             .overlay(
                 isActive
                     ? Rectangle()
-                        .fill(Theme.primary)
+                        .fill(theme.primary)
                         .frame(width: 2)
                     : nil,
                 alignment: .leading
@@ -109,7 +110,7 @@ struct NavigationDrawer: View {
         } label: {
             HStack(spacing: 12) {
                 Circle()
-                    .fill(isSelected ? Theme.primary : Theme.surfaceContainerHigh)
+                    .fill(isSelected ? theme.primary : theme.surfaceContainerHigh)
                     .frame(width: 6, height: 6)
                 Text(feed.title)
                     .labelSmall()
@@ -118,8 +119,8 @@ struct NavigationDrawer: View {
             }
             .padding(.horizontal, 24)
             .padding(.vertical, 8)
-            .foregroundColor(isSelected ? Theme.primary : Theme.onSurfaceVariant)
-            .background(isSelected ? Theme.secondaryContainer.opacity(0.3) : Color.clear)
+            .foregroundColor(isSelected ? theme.primary : theme.onSurfaceVariant)
+            .background(isSelected ? theme.secondaryContainer.opacity(0.3) : Color.clear)
         }
         .buttonStyle(.plain)
     }
@@ -143,11 +144,11 @@ struct NavigationDrawer: View {
                     Spacer()
                     Text("\(feeds.count)")
                         .labelXSmall()
-                        .foregroundColor(Theme.outline)
+                        .foregroundColor(theme.outline)
                 }
                 .padding(.horizontal, 24)
                 .padding(.vertical, 8)
-                .foregroundColor(Theme.onSurfaceVariant)
+                .foregroundColor(theme.onSurfaceVariant)
             }
             .buttonStyle(.plain)
 

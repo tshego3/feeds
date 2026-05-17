@@ -13,7 +13,7 @@ enum AppTab: String, CaseIterable, Identifiable {
 
     var icon: String {
         switch self {
-        case .home: return "dot.radiowaves.up.forward"
+        case .home: return "house"
         case .unread: return "envelope.badge"
         case .bookmarks: return "bookmark"
         case .discover: return "safari"

@@ -3,6 +3,7 @@ import SwiftUI
 /// Mobile bottom navigation bar matching design system's glassmorphic tab bar.
 struct MobileTabBar: View {
     @Binding var selectedTab: AppTab
+    @Environment(\.themeColors) private var theme
 
     private let tabs: [AppTab] = [.home, .unread, .bookmarks, .search]
 
@@ -19,12 +20,12 @@ struct MobileTabBar: View {
                         Text(tabLabel(tab))
                             .labelXSmall()
                     }
-                    .foregroundColor(selectedTab == tab ? Theme.primary : Theme.onSurfaceVariant)
+                    .foregroundColor(selectedTab == tab ? theme.primary : theme.onSurfaceVariant)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 4)
                     .background(
                         selectedTab == tab
-                            ? Theme.secondaryContainer.opacity(0.5)
+                            ? theme.secondaryContainer.opacity(0.5)
                             : Color.clear
                     )
                     .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -37,7 +38,7 @@ struct MobileTabBar: View {
         .background(.ultraThinMaterial)
         .overlay(alignment: .top) {
             Rectangle()
-                .fill(Theme.outlineVariant)
+                .fill(theme.outlineVariant)
                 .frame(height: 1)
         }
     }

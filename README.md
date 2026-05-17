@@ -211,12 +211,13 @@ feeds-swift-app/
 
 **`FeedService.swift`**
 
+- `struct FeedService: FeedServiceProtocol` — lightweight value type implementing the service protocol for testable dependency injection
 - Use `URLSession` for network requests (C#: `HttpClient`) - native on both iOS and Android via Swift Foundation
 - 3-tier fetch strategy (direct first, proxy fallback):
   1. Direct URL fetch
   2. `https://rss-proxy-api.netlify.app/.netlify/functions/fetch-xml?url=<encoded>`
   3. `https://api.codetabs.com/v1/proxy/?quest=<encoded>`
-- `static func fetchFeed(url: String) async throws -> [FeedItem]` - C#: `public static async Task<List<FeedItem>> FetchFeed(string url)`
+- `func fetchFeed(url: String) async throws -> [FeedItem]` — instance method, injected into `FeedViewModel` via protocol
 - All requests use a 15-second timeout (`timeoutInterval = 15`)
 - Custom `FeedError` enum: `.networkError(Error)`, `.parsingError`, `.feedUnavailable(status: Int)`
 
@@ -249,6 +250,7 @@ feeds-swift-app/
 - `DashboardView` for feed content with bento grid layout (featured article + grid + compact rows)
 - `ArticleReadingView` for full article reading with HTML rendering support via `HTMLContentView` (WKWebView)
 - `HTMLContentView` adapts its CSS to match the active theme (light/dark/monochrome)
+- Theme colors are injected via `@Environment(\.themeColors)` from `SettingsViewModel.themeColors` — no global mutable state
 - Dependencies injected via `@EnvironmentObject`: `BookmarkViewModel`, `SettingsViewModel`
 
 **`CardView.swift`**
@@ -286,9 +288,27 @@ feeds-swift-app/
 - `@Published var isLoading: Bool = false`
 - `@Published var unreadItems: [FeedItem]` - filtered unread articles
 - `var hasItems: Bool { !feedItems.isEmpty }` - computed property for view rendering
+- Accepts `FeedServiceProtocol` via `init(feedService:)` for testable dependency injection (defaults to `FeedService()`)
 - `func loadConfig()` - decode feeds.json, build flat `allFeeds` list and hierarchical `menuItems` for grouped navigation
 - `func selectFeed(_ feed: RssFeedModel) async` - set selected, set `isLoading`, call `fetchFeed`, update `feedItems`
 - 3-tier error handling: `FeedError` cases → user-safe messages, `URLError` → network message, catch-all → generic message
+- `func discoverFeeds(query:)` — search feeds, `func generateOPML()` — export subscriptions as OPML
+- Computed: `filteredDiscoverFeeds(query:)`, `groupedDiscoverFeeds(query:)`, `feedCategories`
+
+**`SettingsViewModel.swift`**
+
+- `@Published var themeColors: ThemeColors` — resolved theme colors for the current appearance mode
+- `@Published var appearanceMode: String` — persisted in `UserDefaults` (`"auto"`, `"light"`, `"dark"`, `"monochrome"`)
+- `init(defaults: UserDefaults = .standard)` — injectable `UserDefaults` for testability
+- `func cycleAppearance()` — cycles through Auto → Light → Dark → Monochrome
+- `func applyAutoTheme(systemIsDark:)` — resolves Auto mode based on device system appearance
+
+**`Theme.swift`**
+
+- `ThemeColors` struct with 30+ semantic color properties (`.light`, `.dark`, `.monochrome` presets)
+- Injected into the view hierarchy via custom `EnvironmentKey` (`ThemeColorsKey`)
+- Views access colors via `@Environment(\.themeColors) private var theme`
+- `Theme.resolve(_:)` maps appearance mode string → `ThemeColors`
 
 **8. Utilities**
 
@@ -298,7 +318,13 @@ feeds-swift-app/
 
 - `static func formatDate(_ dateString: String) -> String` - parse RSS date format (`EEE, dd MMM yyyy HH:mm:ss Z`) via `DateFormatter`
 - `static func stripHTML(_ html: String) -> String` - strips HTML tags and decodes common HTML entities for plain-text preview display
-  <!-- C#: public static string FormatDate(string dateString) => DateTime.TryParseExact(...) -->
+- `static func escapeXML(_ string: String) -> String` - escapes special XML characters for safe OPML export
+
+**On-Device AI Summary (Planned)**
+
+- Model: `smollm2:1.7b-instruct-q4_K_M` — a 1.7B parameter instruction-tuned SLM, quantized to Q4_K_M for efficient on-device inference
+- Runtime: Ollama / llama.cpp integration for local summarisation of article content
+- Goal: Generate article summaries entirely on-device with no network dependency
 
 **9. Building & Running**
 

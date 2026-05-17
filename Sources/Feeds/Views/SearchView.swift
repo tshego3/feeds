@@ -7,6 +7,7 @@ struct SearchView: View {
     @State private var searchText = ""
     // TODO: Load recent searches from persistent storage (UserDefaults or SearchHistoryService)
     @State private var recentSearches: [String] = []
+    @Environment(\.themeColors) private var theme
 
     private var filteredItems: [FeedItem] {
         guard !searchText.isEmpty else { return viewModel.feedItems }
@@ -26,7 +27,7 @@ struct SearchView: View {
             }
             .padding(.bottom, 80)
         }
-        .background(Theme.background)
+        .background(theme.background)
     }
 
     // MARK: - Search Header
@@ -35,21 +36,21 @@ struct SearchView: View {
         VStack(alignment: .leading, spacing: 24) {
             Text("Search")
                 .headlineLarge()
-                .foregroundColor(Theme.primary)
+                .foregroundColor(theme.primary)
 
             HStack(spacing: 12) {
                 Image(systemName: "magnifyingglass")
-                    .foregroundColor(Theme.outline)
+                    .foregroundColor(theme.outline)
                 TextField("Search articles, sources, or topics...", text: $searchText)
-                    .foregroundColor(Theme.onSurface)
+                    .foregroundColor(theme.onSurface)
                     .bodyLarge()
             }
             .padding(20)
-            .background(Theme.surfaceContainerLow)
+            .background(theme.surfaceContainerLow)
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Theme.outlineVariant, lineWidth: 1)
+                    .stroke(theme.outlineVariant, lineWidth: 1)
             )
         }
         .padding(.horizontal, 24)
@@ -63,14 +64,14 @@ struct SearchView: View {
             HStack {
                 Text("RECENT SEARCHES")
                     .labelSmall()
-                    .foregroundColor(Theme.outline)
+                    .foregroundColor(theme.outline)
                     .textCase(.uppercase)
                 Spacer()
                 Button("CLEAR ALL") {
                     recentSearches.removeAll()
                 }
                 .labelXSmall()
-                .foregroundColor(Theme.primary)
+                .foregroundColor(theme.primary)
                 .buttonStyle(.plain)
             }
 
@@ -87,14 +88,14 @@ struct SearchView: View {
                         }
                         .buttonStyle(.plain)
                     }
-                    .foregroundColor(Theme.onSurface)
+                    .foregroundColor(theme.onSurface)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
-                    .background(Theme.secondaryContainer.opacity(0.3))
+                    .background(theme.secondaryContainer.opacity(0.3))
                     .clipShape(Capsule())
                     .overlay(
                         Capsule()
-                            .stroke(Theme.outlineVariant, lineWidth: 1)
+                            .stroke(theme.outlineVariant, lineWidth: 1)
                     )
                 }
             }
@@ -109,19 +110,19 @@ struct SearchView: View {
             HStack {
                 Text("ARTICLES")
                     .labelSmall()
-                    .foregroundColor(Theme.outline)
+                    .foregroundColor(theme.outline)
                     .textCase(.uppercase)
                 Spacer()
                 HStack(spacing: 4) {
                     Text("Sort by:")
                         .labelXSmall()
-                        .foregroundColor(Theme.onSurfaceVariant)
+                        .foregroundColor(theme.onSurfaceVariant)
                     Text("Relevance")
                         .labelXSmall()
-                        .foregroundColor(Theme.primary)
+                        .foregroundColor(theme.primary)
                     Image(systemName: "chevron.down")
                         .font(.system(size: 10))
-                        .foregroundColor(Theme.outline)
+                        .foregroundColor(theme.outline)
                 }
             }
             .padding(.horizontal, 24)
@@ -133,10 +134,10 @@ struct SearchView: View {
                 VStack(spacing: 12) {
                     Image(systemName: "exclamationmark.triangle")
                         .font(.system(size: 40))
-                        .foregroundColor(Theme.onSurfaceVariant)
+                        .foregroundColor(theme.onSurfaceVariant)
                     Text(error)
                         .bodyMedium()
-                        .foregroundColor(Theme.onSurfaceVariant)
+                        .foregroundColor(theme.onSurfaceVariant)
                         .multilineTextAlignment(.center)
                 }
                 .frame(maxWidth: .infinity, minHeight: 200)
@@ -144,12 +145,12 @@ struct SearchView: View {
                 VStack(spacing: 12) {
                     Image(systemName: "magnifyingglass")
                         .font(.system(size: 40))
-                        .foregroundColor(Theme.onSurfaceVariant)
+                        .foregroundColor(theme.onSurfaceVariant)
                     Text(searchText.isEmpty
                         ? "Search your feed articles by title or content."
                         : "No results found for \"\(searchText)\".")
                         .bodyMedium()
-                        .foregroundColor(Theme.onSurfaceVariant)
+                        .foregroundColor(theme.onSurfaceVariant)
                         .multilineTextAlignment(.center)
                 }
                 .frame(maxWidth: .infinity, minHeight: 200)
@@ -172,17 +173,17 @@ struct SearchView: View {
                 HStack(spacing: 8) {
                     Text(Helpers.formatDate(item.pubDate))
                         .labelXSmall()
-                        .foregroundColor(Theme.outline)
+                        .foregroundColor(theme.outline)
                 }
 
                 Text(item.title)
                     .headlineMedium()
-                    .foregroundColor(Theme.primary)
+                    .foregroundColor(theme.primary)
                     .lineLimit(2)
 
                 Text(item.description)
                     .bodyMedium()
-                    .foregroundColor(Theme.onSurfaceVariant)
+                    .foregroundColor(theme.onSurfaceVariant)
                     .lineLimit(2)
             }
 
@@ -209,7 +210,7 @@ struct SearchView: View {
         .padding(.vertical, 16)
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(Theme.outlineVariant.opacity(0.3))
+                .fill(theme.outlineVariant.opacity(0.3))
                 .frame(height: 1)
                 .padding(.horizontal, 24)
         }

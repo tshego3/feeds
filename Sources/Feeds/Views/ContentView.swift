@@ -14,9 +14,13 @@ struct ContentView: View {
     // "@StateObject" keeps the object alive across view re-renders (like a singleton per view).
     @StateObject var viewModel = FeedViewModel()
     @EnvironmentObject var bookmarkViewModel: BookmarkViewModel
+    @EnvironmentObject private var settings: SettingsViewModel
     @State private var selectedTab: AppTab = .home
     @State private var selectedArticle: FeedItem?
     @State private var showMobileDrawer: Bool = false
+    @State private var homePath = NavigationPath()
+    @State private var unreadPath = NavigationPath()
+    @Environment(\.themeColors) private var theme
 
     var body: some View {
         // NavigationSplitView ≈ C# SplitView / Master-Detail — sidebar + detail pane.
@@ -34,6 +38,17 @@ struct ContentView: View {
             guard let first = viewModel.allFeeds.first else { return }
             viewModel.selectedFeedId = first.id
         }
+        .onChange(of: settings.autoRefresh) { _, enabled in
+            if enabled {
+                viewModel.startAutoRefresh()
+            } else {
+                viewModel.stopAutoRefresh()
+            }
+        }
+        .onAppear {
+            guard settings.autoRefresh else { return }
+            viewModel.startAutoRefresh()
+        }
     }
 
     // MARK: - Desktop Layout (macOS always uses sidebar)
@@ -44,7 +59,7 @@ struct ContentView: View {
             tabContent
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .background(Theme.background)
+        .background(theme.background)
     }
 
     // MARK: - Adaptive Layout (iOS: sidebar on iPad, tabs on iPhone)
@@ -58,7 +73,7 @@ struct ContentView: View {
                     tabContent
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                .background(Theme.background)
+                .background(theme.background)
             } else {
                 ZStack(alignment: .bottom) {
                     VStack(spacing: 0) {
@@ -73,7 +88,7 @@ struct ContentView: View {
                         mobileDrawerOverlay
                     }
                 }
-                .background(Theme.background)
+                .background(theme.background)
             }
         }
     }
@@ -89,30 +104,30 @@ struct ContentView: View {
             } label: {
                 Image(systemName: "line.3.horizontal")
                     .font(.system(size: 20))
-                    .foregroundColor(Theme.primary)
+                    .foregroundColor(theme.primary)
             }
             .buttonStyle(.plain)
 
             Text("feeds")
                 .font(.system(size: 24, weight: .bold))
                 .tracking(-1)
-                .foregroundColor(Theme.primary)
+                .foregroundColor(theme.primary)
             Spacer()
             Button {
                 selectedTab = .search
             } label: {
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: 20))
-                    .foregroundColor(Theme.primary)
+                    .foregroundColor(theme.primary)
             }
             .buttonStyle(.plain)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .background(Theme.surface.opacity(0.8))
+        .background(theme.surface.opacity(0.8))
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(Theme.outlineVariant)
+                .fill(theme.outlineVariant)
                 .frame(height: 1)
         }
     }
@@ -150,9 +165,10 @@ struct ContentView: View {
     private var tabContent: some View {
         switch selectedTab {
         case .home:
-            NavigationStack {
+            NavigationStack(path: $homePath) {
                 DashboardView(viewModel: viewModel)
                     .onChange(of: viewModel.selectedFeedId) {
+                        homePath = NavigationPath()
                         guard let id = viewModel.selectedFeedId,
                               let feed = viewModel.allFeeds.first(where: { $0.id == id }) else { return }
                         Task { await viewModel.selectFeed(feed) }
@@ -169,9 +185,10 @@ struct ContentView: View {
                     }
             }
         case .unread:
-            NavigationStack {
+            NavigationStack(path: $unreadPath) {
                 DashboardView(viewModel: viewModel, filterUnreadOnly: true)
                     .onChange(of: viewModel.selectedFeedId) {
+                        unreadPath = NavigationPath()
                         guard let id = viewModel.selectedFeedId,
                               let feed = viewModel.allFeeds.first(where: { $0.id == id }) else { return }
                         Task { await viewModel.selectFeed(feed) }

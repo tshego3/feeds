@@ -8,6 +8,7 @@ import SwiftUI
 /// Displays one FeedItem as a card with image, title, description, and link.
 /// C#: public partial class CardView : ContentView { public FeedItem Item { get; set; } }
 struct CardView: View {
+    @Environment(\.themeColors) private var theme
 
     // "let" property = immutable, set once at init. C#: public required FeedItem Item { get; init; }
     // No "@State" because this view doesn't own/mutate this data — it just displays it.
@@ -54,7 +55,7 @@ struct CardView: View {
             Text(item.description)
                 .font(.body)            // C#: FontSize = 14
                 .lineLimit(3)
-                .foregroundColor(Theme.onSurfaceVariant)
+                .foregroundColor(theme.onSurfaceVariant)
 
             // HStack = horizontal StackLayout. Children laid out left to right.
             HStack {
@@ -70,11 +71,11 @@ struct CardView: View {
 
                 Text(Helpers.formatDate(item.pubDate))
                     .font(.caption)
-                    .foregroundColor(Theme.onSurfaceVariant)
+                    .foregroundColor(theme.onSurfaceVariant)
             }
         }
         .padding()                      // Inner padding — C#: Padding = new Thickness(16)
-        .background(Theme.surface)
+        .background(theme.surface)
         .cornerRadius(8)               // C#: CornerRadius = 8 (on a Frame/Border)
         .shadow(radius: 2)             // C#: like a BoxShadow or elevation effect
     }

@@ -12,17 +12,16 @@ import Foundation
 
 /// The top-level array element from feeds.json.
 /// C#: public record FeedConfig(double Id, string Title, string? Url, List<FeedCategory>? Categories);
-struct FeedConfig: Codable, Identifiable {
-    // "let" = readonly field. Swift infers types, but you can annotate: "let id: Double".
-    let id: Double          // C#: public double Id { get; init; }
-    let title: String       // C#: public string Title { get; init; }
-    let url: String?        // "String?" = nullable — same syntax as C# nullable reference types
-    let categories: [FeedCategory]?  // "[T]" = Array<T> or List<T> in C#
+struct FeedConfig: Codable, Identifiable, Equatable {
+    let id: Double
+    let title: String
+    let url: String?
+    let categories: [FeedCategory]?
 }
 
 /// A sub-category within a feed config.
 /// C#: public record FeedCategory(double Id, string Title, string Url);
-struct FeedCategory: Codable, Identifiable {
+struct FeedCategory: Codable, Identifiable, Equatable {
     let id: Double
     let title: String
     let url: String
@@ -40,7 +39,7 @@ struct RssFeedModel: Identifiable, Equatable {
 
 /// Represents a menu entry — either a single feed or a group with sub-feeds.
 /// C#: like a discriminated union — single item vs. dropdown with children.
-enum FeedMenuItem: Identifiable {
+enum FeedMenuItem: Identifiable, Equatable {
     case single(RssFeedModel)
     case group(id: String, title: String, feeds: [RssFeedModel])
 

@@ -6,6 +6,8 @@ struct ArticleReadingView: View {
     @ObservedObject var viewModel: ArticleReadingViewModel
     @Environment(\.dismiss) private var dismiss
     @State private var htmlContentHeight: CGFloat = 300
+    @Environment(\.themeColors) private var theme
+    @EnvironmentObject private var settings: SettingsViewModel
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -14,10 +16,12 @@ struct ArticleReadingView: View {
                     metadataSection
                     headlineSection
                     heroImage
-                    aiSummarySection
+                    if settings.showAISummaries {
+                        aiSummarySection
+                    }
                     articleBody
                     Divider()
-                        .background(Theme.outlineVariant)
+                        .background(theme.outlineVariant)
                         .padding(.horizontal, 24)
                         .padding(.vertical, 32)
                 }
@@ -26,7 +30,7 @@ struct ArticleReadingView: View {
                 .frame(maxWidth: 720)
                 .frame(maxWidth: .infinity)
             }
-            .background(Theme.background)
+            .background(theme.background)
 
             // Floating action bar
             floatingBar
@@ -40,6 +44,14 @@ struct ArticleReadingView: View {
         #if !os(macOS)
         .toolbar(.hidden, for: .navigationBar)
         #endif
+        .gesture(
+            DragGesture(minimumDistance: 50)
+                .onEnded { value in
+                    if value.translation.width > 100 && abs(value.translation.height) < 100 {
+                        dismiss()
+                    }
+                }
+        )
     }
 
     // MARK: - Floating Bar
@@ -55,29 +67,29 @@ struct ArticleReadingView: View {
                     Text("Back to feed")
                         .labelSmall()
                 }
-                .foregroundColor(Theme.onSurfaceVariant)
+                .foregroundColor(theme.onSurfaceVariant)
             }
             .buttonStyle(.plain)
 
             Rectangle()
-                .fill(Theme.outlineVariant)
+                .fill(theme.outlineVariant)
                 .frame(width: 1, height: 16)
 
             Button { viewModel.toggleBookmark() } label: {
                 Image(systemName: viewModel.isBookmarked ? "bookmark.fill" : "bookmark")
-                    .foregroundColor(viewModel.isBookmarked ? Theme.primary : Theme.onSurfaceVariant)
+                    .foregroundColor(viewModel.isBookmarked ? theme.primary : theme.onSurfaceVariant)
             }
             .buttonStyle(.plain)
 
             Button { viewModel.showShareSheet = true } label: {
                 Image(systemName: "square.and.arrow.up")
-                    .foregroundColor(Theme.onSurfaceVariant)
+                    .foregroundColor(theme.onSurfaceVariant)
             }
             .buttonStyle(.plain)
 
             Button { viewModel.cycleFontSize() } label: {
                 Image(systemName: "textformat.size")
-                    .foregroundColor(viewModel.fontSizeScale != 1.0 ? Theme.primary : Theme.onSurfaceVariant)
+                    .foregroundColor(viewModel.fontSizeScale != 1.0 ? theme.primary : theme.onSurfaceVariant)
             }
             .buttonStyle(.plain)
         }
@@ -87,7 +99,7 @@ struct ArticleReadingView: View {
         .clipShape(Capsule())
         .overlay(
             Capsule()
-                .stroke(Theme.outlineVariant, lineWidth: 1)
+                .stroke(theme.outlineVariant, lineWidth: 1)
         )
         .padding(.top, 16)
     }
@@ -98,19 +110,19 @@ struct ArticleReadingView: View {
         HStack(spacing: 8) {
             Text(viewModel.feedTitle)
                 .labelXSmall()
-                .foregroundColor(Theme.onSurface)
+                .foregroundColor(theme.onSurface)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 4)
-                .background(Theme.surfaceContainerHigh)
+                .background(theme.surfaceContainerHigh)
                 .clipShape(Capsule())
 
             Text("•")
-                .foregroundColor(Theme.onSurfaceVariant)
+                .foregroundColor(theme.onSurfaceVariant)
                 .labelXSmall()
 
             Text(Helpers.formatDate(viewModel.item.pubDate))
                 .labelXSmall()
-                .foregroundColor(Theme.onSurfaceVariant)
+                .foregroundColor(theme.onSurfaceVariant)
         }
         .padding(.horizontal, 24)
         .padding(.bottom, 16)
@@ -121,7 +133,7 @@ struct ArticleReadingView: View {
     private var headlineSection: some View {
         Text(viewModel.item.title)
             .headlineLarge()
-            .foregroundColor(Theme.primary)
+            .foregroundColor(theme.primary)
             .padding(.horizontal, 24)
             .padding(.bottom, 24)
     }
@@ -153,7 +165,7 @@ struct ArticleReadingView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(Theme.outlineVariant, lineWidth: 1)
+                            .stroke(theme.outlineVariant, lineWidth: 1)
                     )
                     .padding(.horizontal, 24)
                     .padding(.bottom, 32)
@@ -162,31 +174,31 @@ struct ArticleReadingView: View {
     }
 
     // MARK: - AI Summary
-    // TODO: Replace with on-device SLM summarisation (e.g. Apple Intelligence / local model)
+    // TODO: Wire on-device SLM summarisation using smollm2:1.7b-instruct-q4_K_M via Ollama/llama.cpp
 
     private var aiSummarySection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
                 Image(systemName: "sparkles")
                     .labelXSmall()
-                    .foregroundColor(Theme.primary)
+                    .foregroundColor(theme.primary)
                 Text("AI SUMMARY")
                     .labelXSmall()
-                    .foregroundColor(Theme.primary)
+                    .foregroundColor(theme.primary)
                     .textCase(.uppercase)
             }
 
             Text(viewModel.item.plainDescription)
                 .bodyMedium()
-                .foregroundColor(Theme.onSurface)
+                .foregroundColor(theme.onSurface)
                 .italic()
         }
         .padding(20)
-        .background(Theme.surfaceContainerLow)
+        .background(theme.surfaceContainerLow)
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Theme.outlineVariant, lineWidth: 1)
+                .stroke(theme.outlineVariant, lineWidth: 1)
         )
         .padding(.horizontal, 24)
         .padding(.bottom, 32)
@@ -210,14 +222,14 @@ struct ArticleReadingView: View {
             } else {
                 Text(viewModel.item.description)
                     .serifBody(scale: viewModel.fontSizeScale)
-                    .foregroundColor(Theme.onSurface)
+                    .foregroundColor(theme.onSurface)
             }
 
             if let url = URL(string: viewModel.item.link) {
                 Link(destination: url) {
                     Text("Read full article →")
                         .bodyLarge()
-                        .foregroundColor(Theme.primary)
+                        .foregroundColor(theme.primary)
                         .underline()
                 }
             }

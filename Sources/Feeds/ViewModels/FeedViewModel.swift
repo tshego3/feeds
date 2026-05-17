@@ -5,24 +5,30 @@
 // "@Published" ≈ C# [ObservableProperty] from CommunityToolkit.Mvvm — auto-notifies the UI.
 
 import Foundation
+import UserNotifications
 
 // "@MainActor" ensures all property updates happen on the main/UI thread.
 // C#: like wrapping every setter in Dispatcher.Invoke() or MainThread.BeginInvokeOnMainThread().
 // Swift enforces thread safety at compile time — C# doesn't (you get runtime crashes instead).
 @MainActor
 class FeedViewModel: ObservableObject {
-    // "ObservableObject" protocol ≈ C# INotifyPropertyChanged.
-    // "@Published" ≈ C# [ObservableProperty] — auto-fires change notifications.
-    // When any @Published var changes, all observing Views re-render automatically.
 
-    @Published private(set) var feedItems: [FeedItem] = []        // C#: ObservableCollection<FeedItem>
-    @Published private(set) var allFeeds: [RssFeedModel] = []     // C#: ObservableCollection<RssFeedModel>
-    @Published private(set) var menuItems: [FeedMenuItem] = []    // Hierarchical menu structure
-    @Published var selectedFeedId: String?                        // Drives List selection → NavigationSplitView navigation
-    @Published private(set) var selectedFeed: RssFeedModel?       // C#: RssFeedModel? SelectedFeed { get; set; }
-    @Published private(set) var errorMessage: String?             // C#: string? ErrorMessage { get; set; }
-    @Published private(set) var isLoading: Bool = false            // C#: bool IsLoading { get; set; }
-    @Published private(set) var readArticleLinks: Set<String> = [] // C#: HashSet<string> — tracks read article links
+    private let feedService: FeedServiceProtocol
+    private var autoRefreshTask: Task<Void, Never>?
+    private static let refreshInterval: TimeInterval = 900 // 15 minutes
+
+    @Published private(set) var feedItems: [FeedItem] = []
+    @Published private(set) var allFeeds: [RssFeedModel] = []
+    @Published private(set) var menuItems: [FeedMenuItem] = []
+    @Published var selectedFeedId: String?
+    @Published private(set) var selectedFeed: RssFeedModel?
+    @Published private(set) var errorMessage: String?
+    @Published private(set) var isLoading: Bool = false
+    @Published private(set) var readArticleLinks: Set<String> = []
+
+    init(feedService: FeedServiceProtocol = FeedService()) {
+        self.feedService = feedService
+    }
 
     /// Whether any feed items are available to display.
     var hasItems: Bool { !feedItems.isEmpty }
@@ -78,8 +84,7 @@ class FeedViewModel: ObservableObject {
             allFeeds = feeds
             menuItems = items
         } catch {
-            // "error" is the implicit caught error — C#: catch (Exception ex) { /* ex */ }
-            errorMessage = "Failed to parse feeds.json: \(error.localizedDescription)"
+            errorMessage = "Unable to load feed configuration. Please reinstall the app."
         }
     }
 
@@ -95,7 +100,7 @@ class FeedViewModel: ObservableObject {
 
         do {
             // "try await" = C# "await" (Swift requires explicit "try" for throwing async calls).
-            feedItems = try await FeedService.fetchFeed(url: feed.url)
+            feedItems = try await feedService.fetchFeed(url: feed.url)
         } catch let feedError as FeedError {
             switch feedError {
             case .networkError:
@@ -113,5 +118,139 @@ class FeedViewModel: ObservableObject {
             errorMessage = "Something went wrong. Please try again."
             feedItems = []
         }
+    }
+
+    /// Silent refresh for pull-to-refresh — does not show loading spinner.
+    func refreshFeed() async {
+        guard let feed = selectedFeed else { return }
+        do {
+            feedItems = try await feedService.fetchFeed(url: feed.url)
+            errorMessage = nil
+        } catch {
+            // Keep existing content on refresh failure
+        }
+    }
+
+    // MARK: - Explore / Discover
+
+    var discoverFeeds: [DiscoverFeed] {
+        menuItems.flatMap { item -> [DiscoverFeed] in
+            switch item {
+            case .single(let feed):
+                return [DiscoverFeed(id: feed.id, name: feed.title, category: "General")]
+            case .group(_, let title, let feeds):
+                return feeds.map { DiscoverFeed(id: $0.id, name: $0.title, category: title) }
+            }
+        }
+    }
+
+    func filteredDiscoverFeeds(query: String) -> [DiscoverFeed] {
+        guard !query.isEmpty else { return discoverFeeds }
+        let lower = query.lowercased()
+        return discoverFeeds.filter {
+            $0.name.lowercased().contains(lower) || $0.category.lowercased().contains(lower)
+        }
+    }
+
+    func groupedDiscoverFeeds(query: String) -> [(String, [DiscoverFeed])] {
+        let feeds = filteredDiscoverFeeds(query: query)
+        var seen: [String] = []
+        var grouped: [String: [DiscoverFeed]] = [:]
+        for feed in feeds {
+            if !seen.contains(feed.category) { seen.append(feed.category) }
+            grouped[feed.category, default: []].append(feed)
+        }
+        return seen.compactMap { key in grouped[key].map { (key, $0) } }
+    }
+
+    var feedCategories: [String] {
+        menuItems.compactMap { item -> String? in
+            guard case .group(_, let title, _) = item else { return nil }
+            return title
+        }
+    }
+
+    // MARK: - OPML Export
+
+    func generateOPML() -> String {
+        var lines = [
+            """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <opml version="2.0">
+            <head><title>feeds export</title></head>
+            <body>
+            """
+        ]
+        for item in menuItems {
+            switch item {
+            case .single(let feed):
+                lines.append("  <outline text=\"\(Helpers.escapeXML(feed.title))\" xmlUrl=\"\(Helpers.escapeXML(feed.url))\" type=\"rss\"/>")
+            case .group(_, let title, let feeds):
+                lines.append("  <outline text=\"\(Helpers.escapeXML(title))\">")
+                for feed in feeds {
+                    lines.append("    <outline text=\"\(Helpers.escapeXML(feed.title))\" xmlUrl=\"\(Helpers.escapeXML(feed.url))\" type=\"rss\"/>")
+                }
+                lines.append("  </outline>")
+            }
+        }
+        lines.append("</body>\n</opml>")
+        return lines.joined(separator: "\n")
+    }
+
+    // MARK: - Auto Refresh
+
+    func startAutoRefresh() {
+        stopAutoRefresh()
+        requestNotificationPermission()
+        autoRefreshTask = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(Self.refreshInterval))
+                guard !Task.isCancelled, let self else { return }
+                await self.refreshCurrentFeed()
+            }
+        }
+    }
+
+    func stopAutoRefresh() {
+        autoRefreshTask?.cancel()
+        autoRefreshTask = nil
+    }
+
+    private func refreshCurrentFeed() async {
+        guard let feed = selectedFeed else { return }
+        let previousLinks = Set(feedItems.map(\.link))
+
+        do {
+            let newItems = try await feedService.fetchFeed(url: feed.url)
+            let newLinks = Set(newItems.map(\.link))
+            let addedCount = newLinks.subtracting(previousLinks).count
+
+            feedItems = newItems
+
+            if addedCount > 0 {
+                postNewArticlesNotification(count: addedCount, feedTitle: feed.title)
+            }
+        } catch {
+            // Silent failure on background refresh — don't overwrite existing content with an error
+        }
+    }
+
+    private func requestNotificationPermission() {
+        let center = UNUserNotificationCenter.current()
+        center.requestAuthorization(options: [.alert, .badge, .sound]) { _, _ in }
+    }
+
+    private func postNewArticlesNotification(count: Int, feedTitle: String) {
+        let content = UNMutableNotificationContent()
+        content.title = "feeds"
+        content.body = "\(count) new \(count == 1 ? "article" : "articles") in \(feedTitle)"
+        content.sound = .default
+
+        let request = UNNotificationRequest(
+            identifier: "autoRefresh-\(UUID().uuidString)",
+            content: content,
+            trigger: nil
+        )
+        UNUserNotificationCenter.current().add(request) { _ in }
     }
 }

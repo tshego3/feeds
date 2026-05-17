@@ -4,21 +4,29 @@ import Foundation
 @MainActor
 class SettingsViewModel: ObservableObject {
 
+    private let defaults: UserDefaults
+
     @Published var autoRefresh: Bool = false {
-        didSet { UserDefaults.standard.set(autoRefresh, forKey: "autoRefresh") }
+        didSet { defaults.set(autoRefresh, forKey: "autoRefresh") }
     }
 
     @Published var markReadOnScroll: Bool = true {
-        didSet { UserDefaults.standard.set(markReadOnScroll, forKey: "markReadOnScroll") }
+        didSet { defaults.set(markReadOnScroll, forKey: "markReadOnScroll") }
+    }
+
+    @Published var showAISummaries: Bool = true {
+        didSet { defaults.set(showAISummaries, forKey: "showAISummaries") }
     }
 
     @Published var selectedTheme: String = "Dark" {
         didSet {
-            UserDefaults.standard.set(selectedTheme, forKey: "selectedTheme")
+            defaults.set(selectedTheme, forKey: "selectedTheme")
             guard selectedTheme != "Auto" else { return }
-            Theme.apply(selectedTheme)
+            themeColors = Theme.resolve(selectedTheme)
         }
     }
+
+    @Published var themeColors: ThemeColors = .dark
 
     /// Cycles through Auto → Light → Dark → Monochrome → Auto.
     func cycleAppearance() {
@@ -32,14 +40,16 @@ class SettingsViewModel: ObservableObject {
 
     /// Resolves the correct theme when in Auto mode based on device appearance.
     func applyAutoTheme(systemIsDark: Bool) {
-        Theme.apply(systemIsDark ? "Dark" : "Light")
+        themeColors = systemIsDark ? .dark : .light
     }
 
-    init() {
-        self.autoRefresh = UserDefaults.standard.object(forKey: "autoRefresh") as? Bool ?? false
-        self.markReadOnScroll = UserDefaults.standard.object(forKey: "markReadOnScroll") as? Bool ?? true
-        self.selectedTheme = UserDefaults.standard.string(forKey: "selectedTheme") ?? "Dark"
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+        self.autoRefresh = defaults.object(forKey: "autoRefresh") as? Bool ?? false
+        self.markReadOnScroll = defaults.object(forKey: "markReadOnScroll") as? Bool ?? true
+        self.showAISummaries = defaults.object(forKey: "showAISummaries") as? Bool ?? true
+        self.selectedTheme = defaults.string(forKey: "selectedTheme") ?? "Dark"
         guard self.selectedTheme != "Auto" else { return }
-        Theme.apply(self.selectedTheme)
+        self.themeColors = Theme.resolve(self.selectedTheme)
     }
 }

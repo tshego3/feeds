@@ -159,6 +159,12 @@ feeds-swift-app/
 │       ├── Utils/
 │       │   └── Helpers.swift
 │       └── Resources/
+│           ├── Assets.xcassets/
+│           │   ├── AccentColor.colorset/
+│           │   │   └── Contents.json
+│           │   └── AppIcon.appiconset/
+│           │       ├── Contents.json
+│           │       └── logo.png
 │           ├── feeds.json
 │           └── logo.svg
 ├── Tests/

@@ -18,6 +18,7 @@
 		5C7993074FEC2B5BBAEB21A7 /* ArticleReadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86E732B9E29C1E0AA4FCD28E /* ArticleReadingView.swift */; };
 		6373C0FA6D51C5C6832DA9C1 /* HTMLContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A773688C38A916EFF766A83 /* HTMLContentView.swift */; };
 		64078621682F4BE27CEC7FA2 /* CardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90858974E2C33CA9EA0D2B6 /* CardView.swift */; };
+		6675BB6116555DE02E8D527C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97A0693FF2AF19591D9DCE86 /* Assets.xcassets */; };
 		69B5E9F33ED88EE54AB1DBDD /* FeedService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9CDF2664F08180B5DD5BA5E /* FeedService.swift */; };
 		754A8402BE31ED6CAD6955F4 /* feeds.json in Resources */ = {isa = PBXBuildFile; fileRef = FC1AAAD14D6B93B8000E13C8 /* feeds.json */; };
 		839568A87AD72525D9081ED7 /* ArticleReadingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22249089E9D5BEF01DD76E5 /* ArticleReadingViewModel.swift */; };
@@ -61,6 +62,7 @@
 		78CAF6C6A47E62B6419D6586 /* AppTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTab.swift; sourceTree = "<group>"; };
 		7FF60CB1513CE76DE3C29CCE /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
 		86E732B9E29C1E0AA4FCD28E /* ArticleReadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArticleReadingView.swift; sourceTree = "<group>"; };
+		97A0693FF2AF19591D9DCE86 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A76A979686097F7A7AACBF5C /* FeedViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedViewModel.swift; sourceTree = "<group>"; };
 		A9CDF2664F08180B5DD5BA5E /* FeedService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedService.swift; sourceTree = "<group>"; };
 		B36699363A615DE74820F3C4 /* RSSXMLParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RSSXMLParser.swift; sourceTree = "<group>"; };
@@ -98,6 +100,7 @@
 		23414A154BFF234C7D987B16 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				97A0693FF2AF19591D9DCE86 /* Assets.xcassets */,
 				FC1AAAD14D6B93B8000E13C8 /* feeds.json */,
 				25EA621BB13BE6EC0115BADD /* logo.svg */,
 			);
@@ -280,6 +283,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6675BB6116555DE02E8D527C /* Assets.xcassets in Resources */,
 				754A8402BE31ED6CAD6955F4 /* feeds.json in Resources */,
 				C2F59263850D5DB9B81311F8 /* logo.svg in Resources */,
 			);
@@ -345,6 +349,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -470,6 +475,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;

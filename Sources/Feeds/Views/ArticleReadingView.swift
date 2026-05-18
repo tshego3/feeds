@@ -4,12 +4,12 @@ import SwiftUI
 /// Matches article_reading_view/code.html design.
 struct ArticleReadingView: View {
     @ObservedObject var viewModel: ArticleReadingViewModel
-    @Environment(\.dismiss) private var dismiss
-    @State private var htmlContentHeight: CGFloat = 300
-    @Environment(\.themeColors) private var theme
-    @EnvironmentObject private var settings: SettingsViewModel
-    @EnvironmentObject private var modelManager: ModelManagerViewModel
-    @State private var generatedSummary: String?
+    @Environment(\.dismiss) var dismiss
+    @State var htmlContentHeight: CGFloat = 300
+    @Environment(\.themeColors) var theme
+    @EnvironmentObject var settings: SettingsViewModel
+    @EnvironmentObject var modelManager: ModelManagerViewModel
+    @State var generatedSummary: String?
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -47,9 +47,11 @@ struct ArticleReadingView: View {
         .toolbar(.hidden, for: .navigationBar)
         #endif
         .gesture(
-            DragGesture(minimumDistance: 50)
+            DragGesture(minimumDistance: 30, coordinateSpace: .global)
                 .onEnded { value in
-                    if value.translation.width > 100 && abs(value.translation.height) < 100 {
+                    let horizontal = value.translation.width
+                    let vertical = abs(value.translation.height)
+                    if horizontal > 60 && horizontal > vertical * 1.5 {
                         dismiss()
                     }
                 }
@@ -251,6 +253,7 @@ struct ArticleReadingView: View {
 
     private var articleBody: some View {
         VStack(alignment: .leading, spacing: 24) {
+            #if canImport(WebKit)
             if isHTMLContent {
                 HTMLContentView(
                     html: viewModel.item.description,
@@ -263,6 +266,11 @@ struct ArticleReadingView: View {
                     .serifBody(scale: viewModel.fontSizeScale)
                     .foregroundColor(theme.onSurface)
             }
+            #else
+            Text(viewModel.item.plainDescription)
+                .serifBody(scale: viewModel.fontSizeScale)
+                .foregroundColor(theme.onSurface)
+            #endif
 
             if let url = URL(string: viewModel.item.link) {
                 Link(destination: url) {

@@ -10,7 +10,7 @@ import SwiftUI
 struct FeedSidebar: View {
 
     @ObservedObject var viewModel: FeedViewModel
-    @State private var expandedGroups: Set<String> = []
+    @State var expandedGroups: Set<String> = []
 
     var body: some View {
         // List with selection binding drives NavigationSplitView navigation on iPhone

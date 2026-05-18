@@ -5,6 +5,9 @@
 // It uses a delegate pattern (≈ C# event handlers or callback interface).
 
 import Foundation
+#if canImport(FoundationXML)
+import FoundationXML
+#endif
 
 // MARK: - XML Parser
 

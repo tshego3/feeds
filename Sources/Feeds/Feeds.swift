@@ -1,36 +1,29 @@
-// FeedsApp.swift — The app entry point.
-//
-// In C#: this is like Program.cs with "static void Main()" or a top-level statement file.
-// Swift uses SwiftUI's @main attribute (like [STAThread] + Application.Run in WPF/WinUI).
-
-// "import" = "using" in C#. SwiftUI ≈ WPF/MAUI — a declarative UI framework.
 import SwiftUI
+import SkipFuse
 
-// @main marks the app entry point (C#: static void Main).
-// "struct" in Swift is a value type, just like in C#.
-// Conforming to "App" protocol ≈ implementing an interface (": IApp" in C# terms).
-// Swift protocols = C# interfaces — they define a contract.
-@main
-struct FeedsApp: App {
-    @StateObject private var settings = SettingsViewModel()
-    @StateObject private var bookmarkViewModel = BookmarkViewModel()
-    @StateObject private var modelManager = ModelManagerViewModel()
+/// The shared root view for the app, loaded from platform-specific entry points.
+/// On iOS: instantiated by Darwin/Sources/Main.swift
+/// On Android: instantiated by Android/app/src/main/kotlin/Main.kt
+/* SKIP @bridge */public struct FeedsRootView: View {
+    @StateObject var settings = SettingsViewModel()
+    @StateObject var bookmarkViewModel = BookmarkViewModel()
+    @StateObject var modelManager = ModelManagerViewModel()
 
-    var body: some Scene {
-        WindowGroup {
-            AppRootView()
-                .environmentObject(settings)
-                .environmentObject(bookmarkViewModel)
-                .environmentObject(modelManager)
-        }
+    /* SKIP @bridge */public init() {}
+
+    public var body: some View {
+        FeedsContentWrapper()
+            .environmentObject(settings)
+            .environmentObject(bookmarkViewModel)
+            .environmentObject(modelManager)
     }
 }
 
 /// Wrapper view that syncs the device color scheme with the theme engine in Auto mode.
-private struct AppRootView: View {
-    @EnvironmentObject private var settings: SettingsViewModel
-    @EnvironmentObject private var bookmarks: BookmarkViewModel
-    @Environment(\.colorScheme) private var systemColorScheme
+struct FeedsContentWrapper: View {
+    @EnvironmentObject var settings: SettingsViewModel
+    @EnvironmentObject var bookmarks: BookmarkViewModel
+    @Environment(\.colorScheme) var systemColorScheme
 
     private var preferredScheme: ColorScheme? {
         switch settings.selectedTheme {
@@ -58,4 +51,18 @@ private struct AppRootView: View {
                 settings.applyAutoTheme(systemIsDark: systemColorScheme == .dark)
             }
     }
+}
+
+/// Global application delegate for lifecycle events.
+/* SKIP @bridge */public final class FeedsAppDelegate: Sendable {
+    /* SKIP @bridge */public static let shared = FeedsAppDelegate()
+    private init() {}
+
+    /* SKIP @bridge */public func onInit() {}
+    /* SKIP @bridge */public func onLaunch() {}
+    /* SKIP @bridge */public func onResume() {}
+    /* SKIP @bridge */public func onPause() {}
+    /* SKIP @bridge */public func onStop() {}
+    /* SKIP @bridge */public func onDestroy() {}
+    /* SKIP @bridge */public func onLowMemory() {}
 }

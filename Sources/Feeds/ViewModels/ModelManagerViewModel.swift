@@ -95,15 +95,14 @@ class ModelManagerViewModel: ObservableObject {
         } catch is URLError {
             errorMessage = "Network error. Please check your connection and try again."
             isModelLoaded = false
+        } catch is CancellationError {
+            errorMessage = nil
+            isModelLoaded = false
+        } catch let error as CocoaError where error.code == .fileNoSuchFile || error.code == .fileWriteOutOfSpace {
+            errorMessage = "Not enough storage to download this model. Free up space and try again."
+            isModelLoaded = false
         } catch {
-            let desc = error.localizedDescription.lowercased()
-            if desc.contains("disk") || desc.contains("space") || desc.contains("no such file") {
-                errorMessage = "Not enough storage to download this model. Free up space and try again."
-            } else if desc.contains("cancelled") || desc.contains("canceled") {
-                errorMessage = nil
-            } else {
-                errorMessage = "Failed to download model. Please try again later."
-            }
+            errorMessage = "Failed to download model. Please try again later."
             isModelLoaded = false
         }
 

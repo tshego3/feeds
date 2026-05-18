@@ -18,9 +18,8 @@ final class BookmarkViewModel: ObservableObject {
             do {
                 self.store = try SQLiteBookmarkStore()
             } catch {
-                // Fallback: this should not happen in normal operation.
-                // If it does, the app will function without persistence.
-                fatalError("Failed to initialize bookmark database: \(error)")
+                print("[BookmarkViewModel] Database init failed: \(error). Using in-memory store.")
+                self.store = InMemoryBookmarkStore()
             }
         }
     }

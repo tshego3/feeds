@@ -1,48 +1,48 @@
 // swift-tools-version: 6.2
 //
-// Package.swift — like a .csproj file in C#.
-// Declares the project name, platform targets, dependencies, and build targets.
-// "import PackageDescription" is like "using" in C# — it imports a module (namespace).
+// Package.swift — Dual-platform app (iOS + Android via Skip Fuse).
+// Shared Swift code is built as a library consumed by both platforms.
 
 import PackageDescription
 
-// "let" declares an immutable variable (like "readonly" in C#).
-// Package(...) is a struct initializer (similar to calling "new Package { ... }" in C#).
 let package = Package(
     name: "Feeds",
 
-    // C# equivalent: <TargetFramework> in .csproj
-    // Required for SwiftUI — restricts to macOS 14+ / iOS 17+
+    defaultLocalization: "en",
     platforms: [
         .macOS(.v14),
         .iOS(.v17),
     ],
 
-    // Dependencies = NuGet packages. Fetched from Git repos instead of a package registry.
+    products: [
+        .library(name: "Feeds", type: .dynamic, targets: ["Feeds"]),
+    ],
+
     dependencies: [
+        .package(url: "https://source.skip.tools/skip.git", from: "1.6.35"),
+        .package(url: "https://source.skip.tools/skip-fuse.git", from: "1.0.0"),
+        .package(url: "https://source.skip.tools/skip-fuse-ui.git", from: "1.10.5"),
+        .package(url: "https://source.skip.tools/skip-sql.git", from: "0.9.0"),
         .package(url: "https://github.com/ml-explore/mlx-swift-lm", .upToNextMajor(from: "3.31.3")),
         .package(url: "https://github.com/huggingface/swift-huggingface", from: "0.9.0"),
         .package(url: "https://github.com/huggingface/swift-transformers", from: "1.3.0"),
-        .package(url: "https://github.com/groue/GRDB.swift", from: "7.4.1"),
-        .package(url: "https://github.com/apple/swift-crypto", from: "3.10.0"),
     ],
 
     targets: [
-        // A target ≈ a project in a C# solution.
-        // .executableTarget = console app / entry point project.
-        // By convention, source files live in Sources/<TargetName>/
-        .executableTarget(
+        .target(
             name: "Feeds",
             dependencies: [
+                .product(name: "SkipFuse", package: "skip-fuse"),
+                .product(name: "SkipFuseUI", package: "skip-fuse-ui"),
+                .product(name: "SkipSQLPlus", package: "skip-sql"),
                 .product(name: "MLXLLM", package: "mlx-swift-lm", condition: .when(platforms: [.macOS, .iOS])),
                 .product(name: "MLXLMCommon", package: "mlx-swift-lm", condition: .when(platforms: [.macOS, .iOS])),
                 .product(name: "MLXHuggingFace", package: "mlx-swift-lm", condition: .when(platforms: [.macOS, .iOS])),
                 .product(name: "HuggingFace", package: "swift-huggingface", condition: .when(platforms: [.macOS, .iOS])),
                 .product(name: "Tokenizers", package: "swift-transformers", condition: .when(platforms: [.macOS, .iOS])),
-                .product(name: "GRDB", package: "GRDB.swift"),
-                .product(name: "Crypto", package: "swift-crypto"),
             ],
-            resources: [.process("Resources")]
+            resources: [.process("Resources")],
+            plugins: [.plugin(name: "skipstone", package: "skip")]
         ),
         .testTarget(
             name: "FeedsTests",

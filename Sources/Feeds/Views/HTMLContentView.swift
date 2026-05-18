@@ -1,3 +1,4 @@
+#if canImport(WebKit)
 import SwiftUI
 import WebKit
 
@@ -8,7 +9,7 @@ struct HTMLContentView: UIViewRepresentable {
     let html: String
     let fontScale: Double
     @Binding var contentHeight: CGFloat
-    @Environment(\.themeColors) private var theme
+    @Environment(\.themeColors) var theme
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
@@ -31,7 +32,7 @@ struct HTMLContentView: NSViewRepresentable {
     let html: String
     let fontScale: Double
     @Binding var contentHeight: CGFloat
-    @Environment(\.themeColors) private var theme
+    @Environment(\.themeColors) var theme
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
@@ -148,3 +149,4 @@ extension HTMLContentView {
         }
     }
 }
+#endif

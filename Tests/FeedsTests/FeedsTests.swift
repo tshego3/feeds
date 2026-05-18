@@ -210,7 +210,7 @@ struct BookmarkViewModelTests {
     @Test("initial state has no saved articles")
     @MainActor
     func initialState() {
-        let vm = BookmarkViewModel()
+        let vm = BookmarkViewModel(store: InMemoryBookmarkStore())
         #expect(vm.savedArticles.isEmpty)
         #expect(vm.hasSavedArticles == false)
     }
@@ -218,7 +218,7 @@ struct BookmarkViewModelTests {
     @Test("toggle adds article to bookmarks")
     @MainActor
     func toggleAdds() {
-        let vm = BookmarkViewModel()
+        let vm = BookmarkViewModel(store: InMemoryBookmarkStore())
         let item = FeedItem(title: "Test", link: "https://example.com", description: "Desc", pubDate: "", imageURLs: [])
         vm.toggle(item)
         #expect(vm.savedArticles.count == 1)
@@ -228,7 +228,7 @@ struct BookmarkViewModelTests {
     @Test("toggle removes existing bookmark")
     @MainActor
     func toggleRemoves() {
-        let vm = BookmarkViewModel()
+        let vm = BookmarkViewModel(store: InMemoryBookmarkStore())
         let item = FeedItem(title: "Test", link: "https://example.com", description: "Desc", pubDate: "", imageURLs: [])
         vm.toggle(item)
         vm.toggle(item)
@@ -239,7 +239,7 @@ struct BookmarkViewModelTests {
     @Test("remove deletes specific article")
     @MainActor
     func removeArticle() {
-        let vm = BookmarkViewModel()
+        let vm = BookmarkViewModel(store: InMemoryBookmarkStore())
         let item = FeedItem(title: "Test", link: "https://example.com", description: "Desc", pubDate: "", imageURLs: [])
         vm.toggle(item)
         let saved = vm.savedArticles[0]
@@ -250,7 +250,7 @@ struct BookmarkViewModelTests {
     @Test("articles filters by tag")
     @MainActor
     func articlesForTag() {
-        let vm = BookmarkViewModel()
+        let vm = BookmarkViewModel(store: InMemoryBookmarkStore())
         let item = FeedItem(title: "Test", link: "https://example.com", description: "Desc", pubDate: "", imageURLs: [])
         vm.toggle(item)
         #expect(vm.articles(for: "#readlater").count == 1)
@@ -266,7 +266,7 @@ struct ArticleReadingViewModelTests {
     @Test("initial state reflects bookmark status")
     @MainActor
     func initialState() {
-        let bookmarks = BookmarkViewModel()
+        let bookmarks = BookmarkViewModel(store: InMemoryBookmarkStore())
         let item = FeedItem(title: "Test", link: "https://example.com", description: "Desc", pubDate: "", imageURLs: [])
         let vm = ArticleReadingViewModel(item: item, bookmarkViewModel: bookmarks)
         #expect(vm.isBookmarked == false)
@@ -277,7 +277,7 @@ struct ArticleReadingViewModelTests {
     @Test("toggleBookmark changes state")
     @MainActor
     func toggleBookmark() {
-        let bookmarks = BookmarkViewModel()
+        let bookmarks = BookmarkViewModel(store: InMemoryBookmarkStore())
         let item = FeedItem(title: "Test", link: "https://example.com", description: "Desc", pubDate: "", imageURLs: [])
         let vm = ArticleReadingViewModel(item: item, bookmarkViewModel: bookmarks)
         vm.toggleBookmark()
@@ -289,7 +289,7 @@ struct ArticleReadingViewModelTests {
     @Test("cycleFontSize cycles through three sizes")
     @MainActor
     func cycleFontSize() {
-        let bookmarks = BookmarkViewModel()
+        let bookmarks = BookmarkViewModel(store: InMemoryBookmarkStore())
         let item = FeedItem(title: "Test", link: "https://example.com", description: "Desc", pubDate: "", imageURLs: [])
         let vm = ArticleReadingViewModel(item: item, bookmarkViewModel: bookmarks)
         #expect(vm.fontSizeScale == 1.0)
@@ -304,7 +304,7 @@ struct ArticleReadingViewModelTests {
     @Test("shareURL returns valid URL from item link")
     @MainActor
     func shareURL() {
-        let bookmarks = BookmarkViewModel()
+        let bookmarks = BookmarkViewModel(store: InMemoryBookmarkStore())
         let item = FeedItem(title: "Test", link: "https://example.com/article", description: "Desc", pubDate: "", imageURLs: [])
         let vm = ArticleReadingViewModel(item: item, bookmarkViewModel: bookmarks)
         #expect(vm.shareURL == URL(string: "https://example.com/article"))

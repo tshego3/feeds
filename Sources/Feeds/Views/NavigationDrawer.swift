@@ -6,8 +6,8 @@ import SwiftUI
 struct NavigationDrawer: View {
     @Binding var selectedTab: AppTab
     @ObservedObject var viewModel: FeedViewModel
-    @State private var expandedGroups: Set<String> = []
-    @Environment(\.themeColors) private var theme
+    @State var expandedGroups: Set<String> = []
+    @Environment(\.themeColors) var theme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {

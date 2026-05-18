@@ -4,7 +4,7 @@ import SwiftUI
 /// Matches the dashboard/code.html design.
 struct DashboardView: View {
     @ObservedObject var viewModel: FeedViewModel
-    @Environment(\.themeColors) private var theme
+    @Environment(\.themeColors) var theme
     var filterUnreadOnly: Bool = false
 
     private var displayItems: [FeedItem] {
@@ -170,8 +170,8 @@ struct DashboardView: View {
 
 struct FeaturedArticleCard: View {
     let item: FeedItem
-    @EnvironmentObject private var bookmarks: BookmarkViewModel
-    @Environment(\.themeColors) private var theme
+    @EnvironmentObject var bookmarks: BookmarkViewModel
+    @Environment(\.themeColors) var theme
 
     private var hasImage: Bool { item.displayImage != nil }
 
@@ -287,9 +287,9 @@ struct FeaturedArticleCard: View {
 
 struct ArticleCard: View {
     let item: FeedItem
-    @EnvironmentObject private var bookmarks: BookmarkViewModel
-    @EnvironmentObject private var modelManager: ModelManagerViewModel
-    @Environment(\.themeColors) private var theme
+    @EnvironmentObject var bookmarks: BookmarkViewModel
+    @EnvironmentObject var modelManager: ModelManagerViewModel
+    @Environment(\.themeColors) var theme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -362,7 +362,7 @@ struct ArticleCard: View {
 
 struct CompactArticleRow: View {
     let item: FeedItem
-    @Environment(\.themeColors) private var theme
+    @Environment(\.themeColors) var theme
 
     var body: some View {
         HStack(spacing: 16) {

@@ -1,0 +1,5 @@
+# Skip configuration for Feeds module
+# Natively-compiled Skip Fuse module — only explicitly annotated types are bridged
+skip:
+  mode: 'native'
+  bridge: 'public'

@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 /// Fetches available AI models from the HuggingFace API with bundled fallback.
 struct ModelRegistryService: Sendable {

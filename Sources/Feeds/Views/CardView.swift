@@ -8,7 +8,7 @@ import SwiftUI
 /// Displays one FeedItem as a card with image, title, description, and link.
 /// C#: public partial class CardView : ContentView { public FeedItem Item { get; set; } }
 struct CardView: View {
-    @Environment(\.themeColors) private var theme
+    @Environment(\.themeColors) var theme
 
     // "let" property = immutable, set once at init. C#: public required FeedItem Item { get; init; }
     // No "@State" because this view doesn't own/mutate this data — it just displays it.

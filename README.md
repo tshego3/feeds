@@ -3,8 +3,10 @@
 **1. Project Overview**
 
 - **Purpose**: RSS feed reader that fetches/parses XML feeds, displays articles as image cards in a grid, supports categorized feed navigation
-- **Core features**: JSON-based feed config → XML fetch (with proxy fallback) → parse → card grid UI → sidebar with grouped feed navigation
-- **Key models**: `RssFeedModel(id, title, url)`, `FeedItem` with title/link/description/pubDate/imageURLs
+- **Platforms**: iOS 17+ / macOS 14+ (native) and Android (via [Skip](https://skip.dev/) Fuse mode — shared Swift codebase, SwiftUI → Compose bridge)
+- **Core features**: JSON-based feed config → XML fetch (with proxy fallback) → parse → card grid UI → sidebar with grouped feed navigation → SQLCipher-encrypted bookmark persistence → on-device AI article summaries (Apple Silicon)
+- **Cross-platform imports**: On Android/Linux, networking types require `import FoundationNetworking` and XML parsing requires `import FoundationXML` (conditionally imported via `#if canImport(...)`).
+- **Key models**: `RssFeedModel(id, title, url)`, `FeedItem` with title/link/description/pubDate/imageURLs, `SavedArticle` for bookmarks
 
 **2. Prerequisites & Tooling Setup**
 
@@ -116,17 +118,30 @@
 **Scaffolding**
 
 - `swift package init --type executable --name Feeds`
-- For Android app packaging, use [swift-java](https://github.com/swiftlang/swift-java) to bridge Swift modules into a Kotlin/Java Android app shell
-- See [swift-android-examples](https://github.com/swiftlang/swift-android-examples) for full app project templates
+- Android via [Skip](https://skip.dev/) (Fuse mode): compiles shared Swift code natively for Android and bridges SwiftUI → Jetpack Compose
 - Project structure:
 
 ```
 feeds-swift-app/
 ├── Package.swift
 ├── project.yml
+├── Skip.env
+├── Darwin/
+│   └── Sources/
+│       └── Main.swift              # iOS/macOS @main entry point
+├── Android/
+│   ├── settings.gradle.kts
+│   └── app/
+│       ├── build.gradle.kts
+│       ├── proguard-rules.pro
+│       └── src/main/
+│           ├── AndroidManifest.xml
+│           └── kotlin/Main.kt      # Android entry point (Compose)
 ├── Sources/
 │   └── Feeds/
-│       ├── Feeds.swift
+│       ├── Feeds.swift             # FeedsRootView (shared app root)
+│       ├── Skip/
+│       │   └── skip.yml            # Skip bridging config
 │       ├── Models/
 │       │   ├── AIModelInfo.swift
 │       │   ├── AppTab.swift
@@ -141,6 +156,7 @@ feeds-swift-app/
 │       │   ├── ArticleReadingView.swift
 │       │   ├── ExploreView.swift
 │       │   ├── HTMLContentView.swift
+│       │   ├── NewArticlesBanner.swift
 │       │   ├── SearchView.swift
 │       │   ├── SavedArticlesView.swift
 │       │   ├── SettingsView.swift
@@ -156,6 +172,10 @@ feeds-swift-app/
 │       │   ├── ModelManagerViewModel.swift
 │       │   └── SettingsViewModel.swift
 │       ├── Services/
+│       │   ├── BookmarkEncryptionService.swift  # Key management for SQLCipher
+│       │   ├── BookmarkStore.swift              # Protocol
+│       │   ├── InMemoryBookmarkStore.swift      # Test/fallback impl
+│       │   ├── SQLiteBookmarkStore.swift        # SQLCipher-encrypted persistence
 │       │   ├── FeedService.swift
 │       │   ├── ModelRegistryService.swift
 │       │   └── RSSXMLParser.swift
@@ -232,6 +252,19 @@ feeds-swift-app/
 - Extract: `<title>`, `<link>`, `<description>`, `<pubDate>`, `<media:content url>`, `<enclosure url>`, `<media:thumbnail url>`
 - Map parsed nodes → `[FeedItem]`
 
+**Bookmark Persistence (SQLCipher-encrypted SQLite)**
+
+- `BookmarkStore` protocol: async CRUD operations (`fetchAll`, `insert`, `delete(byID:)`, `delete(byLink:)`, `contains(link:)`)
+- `SQLiteBookmarkStore`: production implementation using [SkipSQLPlus](https://skip.dev/docs/modules/skip-sql/) (cross-platform SQLite with SQLCipher 256-bit AES encryption)
+  - Uses `PRAGMA key` for full-database encryption — all data encrypted at rest
+  - Works identically on iOS and Android via SkipSQL's native C SQLite layer
+  - Schema migration via `userVersion` pragma
+- `InMemoryBookmarkStore`: lightweight in-memory implementation for tests and fallback
+- `BookmarkKeyManager` (in `BookmarkEncryptionService.swift`): generates/stores the SQLCipher passphrase
+  - Apple: stored in Keychain (`kSecAttrAccessibleWhenUnlockedThisDeviceOnly`)
+  - Android/Linux: stored in a protected file (0600 permissions) at `~/.feeds/.bookmark_key`
+  - Key is a 64-character hex string (256-bit entropy from `SecRandomCopyBytes` / `/dev/urandom`)
+
 **6. View Layer (SwiftUI)**
 
 > **C# dev note - SwiftUI vs Blazor/MAUI/WPF:**
@@ -293,7 +326,7 @@ feeds-swift-app/
 - `@Published var isLoading: Bool = false`
 - `@Published var unreadItems: [FeedItem]` - filtered unread articles
 - `var hasItems: Bool { !feedItems.isEmpty }` - computed property for view rendering
-- Uses `os.Logger` (subsystem: `com.feeds.app`, category: `FeedViewModel`) for operational logging
+- Uses `os.Logger` (subsystem: `co.za.eoitech.feeds`, category: `FeedViewModel`) for operational logging
 - Accepts `FeedServiceProtocol` via `init(feedService:)` for testable dependency injection (defaults to `FeedService()`)
 - `func loadConfig()` - decode feeds.json, build flat `allFeeds` list and hierarchical `menuItems` for grouped navigation
 - `func selectFeed(_ feed: RssFeedModel) async` - set selected, set `isLoading`, call `fetchFeed`, update `feedItems`
@@ -370,7 +403,8 @@ feeds-swift-app/
 **Auto-Refresh & Pull-to-Refresh**
 
 - Auto-refresh: `FeedViewModel` runs a background task that refreshes the current feed every 15 minutes (configurable via `settings.autoRefresh` toggle)
-- Posts local notifications via `UNUserNotificationCenter` when new articles are detected
+- Shows a cross-platform in-app `NewArticlesBanner` when new articles are detected (auto-dismisses after 5 seconds)
+- Works identically on iOS, macOS, and Android — no platform-specific notification APIs required
 - Pull-to-refresh: `.refreshable` modifier on `DashboardView` triggers a silent refresh without showing the loading spinner
 - Both use separate codepaths from `selectFeed` to avoid resetting the loading state and destroying the scroll position
 
@@ -514,7 +548,25 @@ feeds-swift-app/
    - No App Store distribution, push notifications, or some entitlements
    - Paid account ($99/year) removes these limits and enables App Store publishing
 
-**Android (Emulator)**
+**Android (Emulator via Skip)**
+
+- Install Skip CLI (one-time):
+  ```bash
+  brew tap skiptools/skip && brew install skip
+  skip checkup   # verifies Android SDK, NDK, JDK are configured
+  ```
+- Build the Android app (generates APK via Gradle):
+  ```bash
+  skip android build
+  ```
+- Run on a connected emulator or device:
+  ```bash
+  skip android run
+  ```
+- The Android project scaffold is in `Android/` — standard Gradle structure with Kotlin entry point (`Main.kt`) that bridges to `FeedsRootView` via Skip Fuse
+- Skip config: `Skip.env` (bundle ID, package name), `Sources/Feeds/Skip/skip.yml` (bridge mode)
+
+**Android (CLI-only — no Skip)**
 
 - Cross-compile for the emulator (`x86_64`) or a physical device (`aarch64`):
   ```bash
@@ -530,8 +582,7 @@ feeds-swift-app/
   adb push $ANDROID_NDK_HOME/toolchains/llvm/prebuilt/*/sysroot/usr/lib/x86_64-linux-android/libc++_shared.so /data/local/tmp/
   adb shell /data/local/tmp/Feeds
   ```
-- For a full `.apk` app: use [swift-java](https://github.com/swiftlang/swift-java) to build Swift as a shared library, embed in a Kotlin/Java Android app, and deploy with Gradle
-- See [swift-android-examples](https://github.com/swiftlang/swift-android-examples) for complete app packaging templates
+- Note: CLI-only builds produce a headless binary (no UI). For a full UI app, use Skip (above)
 
 **VS Code Workflow**
 
@@ -718,19 +769,40 @@ feeds-swift-app/
 - **Images**: `AsyncImage` (iOS SwiftUI) / custom image loading on Android side (Coil/Glide in Kotlin shell)
 - **Dark mode**: Three theme modes via Settings - **Light** (standard light appearance), **Dark** (standard iOS/macOS dark), and **Monochrome** (Monolithic Clarity custom design: pure black background, white-only accents, fully desaturated). Theme colors are defined in `Theme.swift` with a `ThemeColors` struct and three presets. All views reference `Theme.xxx` computed properties that resolve from the active preset.
 
-**12. Android App Packaging (Beyond CLI)**
+**12. Android App Packaging (Skip Fuse)**
 
-- The Swift SDK for Android compiles Swift to native Android binaries, but full apps need a Kotlin/Java app shell
-- Use [swift-java](https://github.com/swiftlang/swift-java) to generate JNI bindings so Kotlin calls Swift functions
-- Build Swift modules as `.so` shared libraries, bundle into the Android app's `jniLibs/` directory
-- The Kotlin shell handles Android-specific UI (Jetpack Compose) while Swift handles shared business logic (models, services, networking, XML parsing)
-- See [swift-android-examples](https://github.com/swiftlang/swift-android-examples) for full working projects
+- This project uses [Skip](https://skip.dev/) (Fuse mode) for full Android app packaging
+- Skip compiles shared Swift code natively for Android and bridges SwiftUI views → Jetpack Compose
+- Architecture: `Sources/Feeds/` contains all shared code → Skip plugin compiles it for Android → `Android/` contains the Gradle project shell with Kotlin entry point
+- Key files:
+  - `Skip.env`: bundle ID, package name, version
+  - `Sources/Feeds/Skip/skip.yml`: bridging mode (`native` + `public`)
+  - `Android/app/src/main/kotlin/Main.kt`: Android `MainActivity` + `AndroidAppMain` composable
+  - `Darwin/Sources/Main.swift`: iOS/macOS `@main` entry point
+- Cross-platform dependencies (work on both platforms via Skip):
+  - `SkipFuse`: native Swift compilation + bridging runtime for Android
+  - `SkipFuseUI`: SwiftUI → Compose bridge
+  - `SkipSQLPlus`: SQLite + SQLCipher encryption (cross-platform)
+- Apple-only dependencies (conditionally compiled):
+  - `MLXLLM`, `MLXLMCommon`, `MLXHuggingFace`: on-device AI inference
+  - `HuggingFace`, `Tokenizers`: model downloads and tokenization
 
-**13. Resources**
+**13. Troubleshooting**
 
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `No such module 'SkipFuse'` (VS Code) | SourceKit-LSP index is stale after package resolution | `Cmd+Shift+P` → **Swift: Restart LSP Server**. If persists: **Swift: Clean Build** then restart LSP |
+| `Undefined symbol: _main` | Xcode project missing the `@main` entry point (`Darwin/Sources/Main.swift`) | Ensure `project.yml` includes `- path: Darwin/Sources` in the sources list, then `xcodegen generate` |
+| `failed to find blueprint corresponding to PIF GUID: "PACKAGE-RESOURCE:SkipSQLPlus"` | Stale SPM build cache after dependency changes | `rm -rf .build && swift package resolve` |
+| `failed to load toolchain: toolchain 'com.apple.dt.toolchain.XcodeDefault' already registered` | A symlink in `~/Library/Developer/Toolchains/` points back to Xcode's toolchain, creating a duplicate | Remove the offending symlink: `rm ~/Library/Developer/Toolchains/swift-<version>.xctoolchain` (only if it symlinks to `XcodeDefault.xctoolchain`) |
+| Xcode macro trust dialog reappears after `xcodegen generate` | XcodeGen regenerates the project, resetting macro trust | Either re-trust in the dialog, pass `-skipMacroValidation` to `xcodebuild`, or run `defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES` |
+
+**14. Resources**
+
+- [Skip Documentation](https://skip.dev/docs/)
+- [Skip Fuse Mode](https://skip.dev/docs/modes/)
+- [SkipSQL (SQLite + SQLCipher)](https://skip.dev/docs/modules/skip-sql/)
 - [Swift SDK for Android - Getting Started](https://www.swift.org/documentation/articles/swift-sdk-for-android-getting-started.html)
-- [swift-java interoperability library](https://github.com/swiftlang/swift-java)
-- [swift-android-examples](https://github.com/swiftlang/swift-android-examples)
 - [Android category on Swift Forums](https://forums.swift.org/c/platform/android/115)
 
 ---

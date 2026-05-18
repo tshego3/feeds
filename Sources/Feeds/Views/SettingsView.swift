@@ -3,11 +3,11 @@ import SwiftUI
 /// Settings view — account, appearance, preferences, data management.
 /// Matches settings/code.html design with glassmorphic cards.
 struct SettingsView: View {
-    @EnvironmentObject private var settings: SettingsViewModel
-    @EnvironmentObject private var modelManager: ModelManagerViewModel
+    @EnvironmentObject var settings: SettingsViewModel
+    @EnvironmentObject var modelManager: ModelManagerViewModel
     @ObservedObject var feedViewModel: FeedViewModel
-    @State private var showExportSheet = false
-    @Environment(\.themeColors) private var theme
+    @State var showExportSheet = false
+    @Environment(\.themeColors) var theme
 
     var body: some View {
         ScrollView {
@@ -390,7 +390,7 @@ struct SettingsView: View {
 // MARK: - Glass Panel Modifier
 
 struct GlassPanelModifier: ViewModifier {
-    @Environment(\.themeColors) private var theme
+    @Environment(\.themeColors) var theme
 
     func body(content: Content) -> some View {
         content

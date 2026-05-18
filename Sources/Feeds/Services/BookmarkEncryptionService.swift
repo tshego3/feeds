@@ -1,40 +1,16 @@
 import Foundation
-import Crypto
 #if canImport(Security)
 import Security
 #endif
 
-/// Cross-platform encryption service using AES-GCM (256-bit).
-/// Works on iOS, macOS, and Android/Linux via swift-crypto.
-struct BookmarkEncryptionService: Sendable {
+/// Cross-platform key manager for SQLCipher database encryption.
+/// Generates and securely stores a 256-bit hex passphrase.
+/// On Apple: stored in Keychain.
+/// On Android/Linux: stored in a protected file (0600 permissions).
+enum BookmarkKeyManager: Sendable {
 
-    private let key: SymmetricKey
-
-    init(key: SymmetricKey) {
-        self.key = key
-    }
-
-    /// Encrypts data using AES-GCM. Returns combined nonce + ciphertext + tag.
-    func encrypt(_ data: Data) throws -> Data {
-        let sealedBox = try AES.GCM.seal(data, using: key)
-        guard let combined = sealedBox.combined else {
-            throw BookmarkEncryptionError.encryptionFailed
-        }
-        return combined
-    }
-
-    /// Decrypts AES-GCM combined data (nonce + ciphertext + tag).
-    func decrypt(_ combined: Data) throws -> Data {
-        let sealedBox = try AES.GCM.SealedBox(combined: combined)
-        return try AES.GCM.open(sealedBox, using: key)
-    }
-
-    // MARK: - Key Management
-
-    /// Loads or creates an encryption key.
-    /// On Apple: stored in Keychain.
-    /// On Android/Linux: stored in a protected file.
-    static func loadOrCreateKey() throws -> SymmetricKey {
+    /// Loads or creates the SQLCipher passphrase (64-char hex string).
+    static func loadOrCreateKey() throws -> String {
         #if canImport(Security)
         return try loadOrCreateKeyFromKeychain()
         #else
@@ -46,18 +22,18 @@ struct BookmarkEncryptionService: Sendable {
 
     #if canImport(Security)
     private static let keychainService = "com.feeds.bookmark-db"
-    private static let keychainAccount = "aes-gcm-key"
+    private static let keychainAccount = "sqlcipher-key"
 
-    private static func loadOrCreateKeyFromKeychain() throws -> SymmetricKey {
+    private static func loadOrCreateKeyFromKeychain() throws -> String {
         if let existing = try loadKeyFromKeychain() {
             return existing
         }
-        let key = SymmetricKey(size: .bits256)
+        let key = generateHexKey()
         try saveKeyToKeychain(key)
         return key
     }
 
-    private static func loadKeyFromKeychain() throws -> SymmetricKey? {
+    private static func loadKeyFromKeychain() throws -> String? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: keychainService,
@@ -70,19 +46,21 @@ struct BookmarkEncryptionService: Sendable {
 
         switch status {
         case errSecSuccess:
-            guard let data = result as? Data else {
-                throw BookmarkEncryptionError.keyLoadFailed
+            guard let data = result as? Data, let key = String(data: data, encoding: .utf8) else {
+                throw BookmarkKeyError.keyLoadFailed
             }
-            return SymmetricKey(data: data)
+            return key
         case errSecItemNotFound:
             return nil
         default:
-            throw BookmarkEncryptionError.keyLoadFailed
+            throw BookmarkKeyError.keyLoadFailed
         }
     }
 
-    private static func saveKeyToKeychain(_ key: SymmetricKey) throws {
-        let keyData = key.withUnsafeBytes { Data($0) }
+    private static func saveKeyToKeychain(_ key: String) throws {
+        guard let keyData = key.data(using: .utf8) else {
+            throw BookmarkKeyError.keySaveFailed
+        }
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: keychainService,
@@ -93,7 +71,7 @@ struct BookmarkEncryptionService: Sendable {
 
         let status = SecItemAdd(query as CFDictionary, nil)
         guard status == errSecSuccess else {
-            throw BookmarkEncryptionError.keySaveFailed
+            throw BookmarkKeyError.keySaveFailed
         }
     }
     #endif
@@ -101,25 +79,22 @@ struct BookmarkEncryptionService: Sendable {
     // MARK: - File-based key (Android/Linux)
 
     #if !canImport(Security)
-    private static func loadOrCreateKeyFromFile() throws -> SymmetricKey {
+    private static func loadOrCreateKeyFromFile() throws -> String {
         let keyPath = try keyFilePath()
 
         if FileManager.default.fileExists(atPath: keyPath) {
             let data = try Data(contentsOf: URL(fileURLWithPath: keyPath))
-            guard data.count == 32 else {
-                throw BookmarkEncryptionError.keyLoadFailed
+            guard let key = String(data: data, encoding: .utf8), key.count == 64 else {
+                throw BookmarkKeyError.keyLoadFailed
             }
-            return SymmetricKey(data: data)
+            return key
         }
 
-        let key = SymmetricKey(size: .bits256)
-        let keyData = key.withUnsafeBytes { Data($0) }
-
+        let key = generateHexKey()
         let dir = URL(fileURLWithPath: keyPath).deletingLastPathComponent()
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        try keyData.write(to: URL(fileURLWithPath: keyPath), options: [.atomic])
+        try key.data(using: .utf8)?.write(to: URL(fileURLWithPath: keyPath), options: [.atomic])
 
-        // Set restrictive file permissions (owner read/write only)
         try FileManager.default.setAttributes(
             [.posixPermissions: 0o600],
             ofItemAtPath: keyPath
@@ -136,13 +111,27 @@ struct BookmarkEncryptionService: Sendable {
             .path
     }
     #endif
+
+    // MARK: - Key Generation
+
+    private static func generateHexKey() -> String {
+        var bytes = [UInt8](repeating: 0, count: 32)
+        #if canImport(Security)
+        _ = SecRandomCopyBytes(kSecRandomDefault, 32, &bytes)
+        #else
+        // /dev/urandom fallback for Android/Linux
+        if let fd = fopen("/dev/urandom", "r") {
+            _ = fread(&bytes, 1, 32, fd)
+            fclose(fd)
+        }
+        #endif
+        return bytes.map { String(format: "%02x", $0) }.joined()
+    }
 }
 
 // MARK: - Errors
 
-enum BookmarkEncryptionError: Error {
-    case encryptionFailed
-    case decryptionFailed
+enum BookmarkKeyError: Error {
     case keyLoadFailed
     case keySaveFailed
 }

@@ -3,7 +3,7 @@ import SwiftUI
 /// Mobile bottom navigation bar matching design system's glassmorphic tab bar.
 struct MobileTabBar: View {
     @Binding var selectedTab: AppTab
-    @Environment(\.themeColors) private var theme
+    @Environment(\.themeColors) var theme
 
     private let tabs: [AppTab] = [.home, .unread, .bookmarks, .search]
 

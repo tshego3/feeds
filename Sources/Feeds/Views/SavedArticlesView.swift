@@ -3,9 +3,9 @@ import SwiftUI
 /// Saved/Bookmarked articles view with tag filters and asymmetric grid.
 /// Matches saved_articles/code.html design.
 struct SavedArticlesView: View {
-    @EnvironmentObject private var bookmarks: BookmarkViewModel
-    @State private var selectedTag = "#all"
-    @Environment(\.themeColors) private var theme
+    @EnvironmentObject var bookmarks: BookmarkViewModel
+    @State var selectedTag = "#all"
+    @Environment(\.themeColors) var theme
 
     private var tags: [String] {
         let articleTags = Set(bookmarks.savedArticles.map { "#\($0.tag)" })

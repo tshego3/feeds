@@ -4,9 +4,9 @@ import SwiftUI
 /// Matches search/code.html design.
 struct SearchView: View {
     @ObservedObject var viewModel: FeedViewModel
-    @State private var searchText = ""
-    @State private var recentSearches: [String] = UserDefaults.standard.stringArray(forKey: "recentSearches") ?? []
-    @Environment(\.themeColors) private var theme
+    @State var searchText = ""
+    @State var recentSearches: [String] = UserDefaults.standard.stringArray(forKey: "recentSearches") ?? []
+    @Environment(\.themeColors) var theme
 
     private static let maxRecentSearches = 10
 

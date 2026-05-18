@@ -5,10 +5,10 @@
 // "@Published" ≈ C# [ObservableProperty] from CommunityToolkit.Mvvm — auto-notifies the UI.
 
 import Foundation
-import UserNotifications
+#if canImport(os)
 import os
-
-private let logger = Logger(subsystem: "com.feeds.app", category: "FeedViewModel")
+private let logger = Logger(subsystem: "co.za.eoitech.feeds", category: "FeedViewModel")
+#endif
 
 // "@MainActor" ensures all property updates happen on the main/UI thread.
 // C#: like wrapping every setter in Dispatcher.Invoke() or MainThread.BeginInvokeOnMainThread().
@@ -28,6 +28,7 @@ class FeedViewModel: ObservableObject {
     @Published private(set) var errorMessage: String?
     @Published private(set) var isLoading: Bool = false
     @Published private(set) var readArticleLinks: Set<String> = []
+    @Published var newArticlesBanner: String?
 
     init(feedService: FeedServiceProtocol = FeedService()) {
         self.feedService = feedService
@@ -204,15 +205,18 @@ class FeedViewModel: ObservableObject {
 
     func startAutoRefresh() {
         stopAutoRefresh()
-        requestNotificationPermission()
         autoRefreshTask = Task { [weak self] in
             while !Task.isCancelled {
                 guard let self else { return }
-                await self.refreshCurrentFeed()
                 try? await Task.sleep(for: .seconds(Self.refreshInterval))
                 guard !Task.isCancelled else { return }
+                await self.refreshCurrentFeed()
             }
         }
+    }
+
+    func dismissBanner() {
+        newArticlesBanner = nil
     }
 
     func stopAutoRefresh() {
@@ -232,33 +236,10 @@ class FeedViewModel: ObservableObject {
             feedItems = newItems
 
             if addedCount > 0 {
-                postNewArticlesNotification(count: addedCount, feedTitle: feed.title)
+                newArticlesBanner = "\(addedCount) new \(addedCount == 1 ? "article" : "articles") in \(feed.title)"
             }
         } catch {
             // Silent failure on background refresh — don't overwrite existing content with an error
-        }
-    }
-
-    private func requestNotificationPermission() {
-        let center = UNUserNotificationCenter.current()
-        center.requestAuthorization(options: [.alert, .badge, .sound]) { _, error in
-            if let error { logger.debug("Notification auth failed: \(error.localizedDescription)") }
-        }
-    }
-
-    private func postNewArticlesNotification(count: Int, feedTitle: String) {
-        let content = UNMutableNotificationContent()
-        content.title = "feeds"
-        content.body = "\(count) new \(count == 1 ? "article" : "articles") in \(feedTitle)"
-        content.sound = .default
-
-        let request = UNNotificationRequest(
-            identifier: "autoRefresh-\(UUID().uuidString)",
-            content: content,
-            trigger: nil
-        )
-        UNUserNotificationCenter.current().add(request) { error in
-            if let error { logger.debug("Failed to post notification: \(error.localizedDescription)") }
         }
     }
 }

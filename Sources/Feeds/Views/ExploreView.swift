@@ -3,9 +3,9 @@ import SwiftUI
 /// Feed Explorer / Discover view — browse and follow new sources.
 /// Matches feed_explorer/code.html design.
 struct ExploreView: View {
-    @State private var searchText = ""
+    @State var searchText = ""
     @ObservedObject var viewModel: FeedViewModel
-    @Environment(\.themeColors) private var theme
+    @Environment(\.themeColors) var theme
 
     private var groupedByCategory: [(String, [DiscoverFeed])] {
         viewModel.groupedDiscoverFeeds(query: searchText)

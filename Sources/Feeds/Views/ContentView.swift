@@ -14,13 +14,13 @@ struct ContentView: View {
     // "@StateObject" keeps the object alive across view re-renders (like a singleton per view).
     @StateObject var viewModel = FeedViewModel()
     @EnvironmentObject var bookmarkViewModel: BookmarkViewModel
-    @EnvironmentObject private var settings: SettingsViewModel
-    @State private var selectedTab: AppTab = .home
-    @State private var selectedArticle: FeedItem?
-    @State private var showMobileDrawer: Bool = false
-    @State private var homePath = NavigationPath()
-    @State private var unreadPath = NavigationPath()
-    @Environment(\.themeColors) private var theme
+    @EnvironmentObject var settings: SettingsViewModel
+    @State var selectedTab: AppTab = .home
+    @State var selectedArticle: FeedItem?
+    @State var showMobileDrawer: Bool = false
+    @State var homePath = NavigationPath()
+    @State var unreadPath = NavigationPath()
+    @Environment(\.themeColors) var theme
 
     var body: some View {
         // NavigationSplitView ≈ C# SplitView / Master-Detail — sidebar + detail pane.
@@ -46,6 +46,15 @@ struct ContentView: View {
                 viewModel.startAutoRefresh()
             } else {
                 viewModel.stopAutoRefresh()
+            }
+        }
+        .overlay(alignment: .top) {
+            if let banner = viewModel.newArticlesBanner {
+                NewArticlesBanner(message: banner) {
+                    viewModel.dismissBanner()
+                }
+                .transition(.move(edge: .top).combined(with: .opacity))
+                .animation(.easeInOut(duration: 0.3), value: viewModel.newArticlesBanner)
             }
         }
     }

@@ -5,9 +5,13 @@
 // Swift errors use "throw" / "try" / "catch" — nearly identical to C# exceptions.
 
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
+#if canImport(os)
 import os
-
-private let logger = Logger(subsystem: "com.feeds.app", category: "FeedService")
+private let logger = Logger(subsystem: "co.za.eoitech.feeds", category: "FeedService")
+#endif
 
 // MARK: - Error Types
 
@@ -51,7 +55,9 @@ struct FeedService: FeedServiceProtocol {
         }
 
         // Direct fetch failed — safe to proceed to proxy fallback
+        #if canImport(os)
         logger.debug("Direct fetch failed for \(url, privacy: .public), trying proxy services")
+        #endif
 
         // Proxy fallback — try proxies if direct fetch failed
         let proxyURLs = Self.proxyBaseURLs.map { $0 + feedURL.absoluteString }
@@ -66,7 +72,9 @@ struct FeedService: FeedServiceProtocol {
                    httpResponse.statusCode == 200 {
                     return RSSXMLParser.parse(data: data)
                 } else {
+                    #if canImport(os)
                     logger.debug("Proxy \(proxyString, privacy: .public) failed, trying next")
+                    #endif
                 }
             }
         }

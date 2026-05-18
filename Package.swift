@@ -19,9 +19,11 @@ let package = Package(
     ],
 
     // Dependencies = NuGet packages. Fetched from Git repos instead of a package registry.
-    // dependencies: [
-    //     .package(url: "https://github.com/some/library.git", from: "1.0.0"),
-    // ],
+    dependencies: [
+        .package(url: "https://github.com/ml-explore/mlx-swift-lm", .upToNextMajor(from: "3.31.3")),
+        .package(url: "https://github.com/huggingface/swift-huggingface", from: "0.9.0"),
+        .package(url: "https://github.com/huggingface/swift-transformers", from: "1.3.0"),
+    ],
 
     targets: [
         // A target ≈ a project in a C# solution.
@@ -29,8 +31,14 @@ let package = Package(
         // By convention, source files live in Sources/<TargetName>/
         .executableTarget(
             name: "Feeds",
-            resources: [.process("Resources")]  // bundles feeds.json into the app
-            // dependencies: []                     // add package dependencies here
+            dependencies: [
+                .product(name: "MLXLLM", package: "mlx-swift-lm", condition: .when(platforms: [.macOS, .iOS])),
+                .product(name: "MLXLMCommon", package: "mlx-swift-lm", condition: .when(platforms: [.macOS, .iOS])),
+                .product(name: "MLXHuggingFace", package: "mlx-swift-lm", condition: .when(platforms: [.macOS, .iOS])),
+                .product(name: "HuggingFace", package: "swift-huggingface", condition: .when(platforms: [.macOS, .iOS])),
+                .product(name: "Tokenizers", package: "swift-transformers", condition: .when(platforms: [.macOS, .iOS])),
+            ],
+            resources: [.process("Resources")]
         ),
         .testTarget(
             name: "FeedsTests",

@@ -49,11 +49,12 @@ struct CardView: View {
 
             // Text views — C#: new Label { Text = "...", FontSize = ... }
             Text(item.title)
-                .font(.headline)        // C#: FontAttributes = Bold, FontSize = 18
-                .lineLimit(2)           // C#: MaxLines = 2
+                .headlineMedium()
+                .foregroundColor(theme.primary)
+                .lineLimit(2)
 
-            Text(item.description)
-                .font(.body)            // C#: FontSize = 14
+            Text(item.plainDescription)
+                .bodyMedium()
                 .lineLimit(3)
                 .foregroundColor(theme.onSurfaceVariant)
 
@@ -63,20 +64,20 @@ struct CardView: View {
                 // "URL(string:)!" force-unwraps — C#: new Uri(string) (crashes if nil — avoid in production).
                 if let url = URL(string: item.link) {
                     Link("View", destination: url)
-                        .font(.caption)
+                        .labelXSmall()
+                        .foregroundColor(theme.primary)
                 }
 
-                // Spacer() pushes remaining items to the right — C#: like a Grid column with Star width.
                 Spacer()
 
                 Text(Helpers.formatDate(item.pubDate))
-                    .font(.caption)
+                    .labelXSmall()
                     .foregroundColor(theme.onSurfaceVariant)
             }
         }
-        .padding()                      // Inner padding — C#: Padding = new Thickness(16)
+        .padding()
         .background(theme.surface)
-        .cornerRadius(8)               // C#: CornerRadius = 8 (on a Frame/Border)
-        .shadow(radius: 2)             // C#: like a BoxShadow or elevation effect
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .shadow(radius: 2)
     }
 }

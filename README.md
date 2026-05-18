@@ -128,6 +128,7 @@ feeds-swift-app/
 │   └── Feeds/
 │       ├── Feeds.swift
 │       ├── Models/
+│       │   ├── AIModelInfo.swift
 │       │   ├── AppTab.swift
 │       │   ├── DiscoverFeed.swift
 │       │   ├── FeedItem.swift
@@ -152,9 +153,11 @@ feeds-swift-app/
 │       │   ├── FeedViewModel.swift
 │       │   ├── ArticleReadingViewModel.swift
 │       │   ├── BookmarkViewModel.swift
+│       │   ├── ModelManagerViewModel.swift
 │       │   └── SettingsViewModel.swift
 │       ├── Services/
 │       │   ├── FeedService.swift
+│       │   ├── ModelRegistryService.swift
 │       │   └── RSSXMLParser.swift
 │       ├── Utils/
 │       │   └── Helpers.swift
@@ -165,6 +168,7 @@ feeds-swift-app/
 │           │   └── AppIcon.appiconset/
 │           │       ├── Contents.json
 │           │       └── logo.png
+│           ├── ai_models.json
 │           ├── feeds.json
 │           └── logo.svg
 ├── Tests/
@@ -251,14 +255,15 @@ feeds-swift-app/
 - `ArticleReadingView` for full article reading with HTML rendering support via `HTMLContentView` (WKWebView)
 - `HTMLContentView` adapts its CSS to match the active theme (light/dark/monochrome)
 - Theme colors are injected via `@Environment(\.themeColors)` from `SettingsViewModel.themeColors` — no global mutable state
-- Dependencies injected via `@EnvironmentObject`: `BookmarkViewModel`, `SettingsViewModel`
+- Dependencies injected via `@EnvironmentObject`: `BookmarkViewModel`, `SettingsViewModel`, `ModelManagerViewModel`
 
-**`CardView.swift`**
+**`CardView.swift`** _(legacy — replaced by `FeaturedArticleCard`/`ArticleCard`/`CompactArticleRow` in `DashboardView`)_
 
 - `AsyncImage(url:)` for feed item images with placeholder - C#: `Image` with `HttpClient`-backed source
 - Desaturated images (`.saturation(0)`) for monochromatic design aesthetic
 - Card variants: `FeaturedArticleCard` (hero + overlay), `ArticleCard` (grid), `CompactArticleRow` (list)
 - Cards display `plainDescription` (HTML-stripped) with `lineLimit` caps
+- Uses design system typography (`.headlineMedium()`, `.bodyMedium()`, `.labelXSmall()`) instead of system fonts
 - `.clipShape(RoundedRectangle)` + `.overlay(stroke)` for card styling
 
 **`FeedSidebar.swift`**
@@ -288,9 +293,12 @@ feeds-swift-app/
 - `@Published var isLoading: Bool = false`
 - `@Published var unreadItems: [FeedItem]` - filtered unread articles
 - `var hasItems: Bool { !feedItems.isEmpty }` - computed property for view rendering
+- Uses `os.Logger` (subsystem: `com.feeds.app`, category: `FeedViewModel`) for operational logging
 - Accepts `FeedServiceProtocol` via `init(feedService:)` for testable dependency injection (defaults to `FeedService()`)
 - `func loadConfig()` - decode feeds.json, build flat `allFeeds` list and hierarchical `menuItems` for grouped navigation
 - `func selectFeed(_ feed: RssFeedModel) async` - set selected, set `isLoading`, call `fetchFeed`, update `feedItems`
+- `func refreshFeed() async` — silent refresh (no loading spinner) for pull-to-refresh
+- `func startAutoRefresh()` / `func stopAutoRefresh()` — 15-minute background refresh with notification posting
 - 3-tier error handling: `FeedError` cases → user-safe messages, `URLError` → network message, catch-all → generic message
 - `func discoverFeeds(query:)` — search feeds, `func generateOPML()` — export subscriptions as OPML
 - Computed: `filteredDiscoverFeeds(query:)`, `groupedDiscoverFeeds(query:)`, `feedCategories`
@@ -320,16 +328,72 @@ feeds-swift-app/
 - `static func stripHTML(_ html: String) -> String` - strips HTML tags and decodes common HTML entities for plain-text preview display
 - `static func escapeXML(_ string: String) -> String` - escapes special XML characters for safe OPML export
 
-**On-Device AI Summary (Planned)**
+**On-Device AI Summaries (MLX)**
 
-- Model: `smollm2:1.7b-instruct-q4_K_M` — a 1.7B parameter instruction-tuned SLM, quantized to Q4_K_M for efficient on-device inference
-- Runtime: Ollama / llama.cpp integration for local summarisation of article content
-- Goal: Generate article summaries entirely on-device with no network dependency
+- Runtime: [mlx-swift-lm](https://github.com/ml-explore/mlx-swift-lm) (Apple MLX framework for on-device LLM inference on Apple Silicon)
+- Dependencies: `mlx-swift-lm` 3.31.3+, `swift-huggingface` 0.9.0+, `swift-transformers` 1.3.0+ — all conditionally compiled for macOS/iOS only (`.when(platforms: [.macOS, .iOS])`)
+- **Simulator limitation:** All MLX code paths are guarded with `#if canImport(MLXLLM) && !targetEnvironment(simulator)`. The iOS Simulator lacks a real Metal GPU, causing uncatchable `abort()` crashes in MLX's C++ Metal backend. On the simulator, `isMLXAvailable` returns `false` and the UI shows: _"AI models require a physical device. The simulator does not support on-device inference."_
+- Model list: dynamic — fetched from the HuggingFace API (`https://huggingface.co/api/models?author=mlx-community`), filtered client-side for small quantized instruction models (< 5B params, 4-bit/QAT). Falls back to bundled `ai_models.json`
+- Curated models (bundled fallback): Gemma 3 1B, Qwen 3 0.6B, Qwen 3 1.7B, Llama 3.2 1B/3B, SmolLM3 3B, Gemma 3n E2B, Qwen 2.5 1.5B
+- Model lifecycle: download from HuggingFace Hub → cache locally → load into memory → generate summaries → delete cached files when no longer needed
+- Inference: `ChatSession` API — prompts the model with article text (truncated to 2000 chars) and returns a 2-3 sentence summary
+- **Android AI (planned)**: AI features are guarded with `#if canImport(MLXLLM) && !targetEnvironment(simulator)`. On non-Apple platforms (and the iOS Simulator), the UI shows a platform requirement message instead of the model list. Roadmap for Android local AI:
+  1. Add `llama.cpp` as a C dependency in `Package.swift` (conditionally for Android via `.when(platforms:)`)
+  2. Create an `LLMProvider` protocol abstracting model load + inference
+  3. Implement `MLXProvider` (Apple) and `LlamaCppProvider` (Android) conformances
+  4. Swap provider in `ModelManagerViewModel.init` based on platform availability
+  5. Host quantized GGUF models on HuggingFace for Android downloads
+
+**`AIModelInfo.swift`**
+
+- `struct AIModelInfo: Identifiable, Equatable, Codable` — model metadata with `id`, `name`, `description`, `sizeLabel`, `huggingFaceID`
+- `static let fallback: [AIModelInfo]` — compile-time fallback when both remote fetch and bundled JSON fail
+
+**`ModelRegistryService.swift`**
+
+- `static func fetchModels() async -> [AIModelInfo]` — tries HuggingFace API first, falls back to bundled `ai_models.json`, then compile-time fallback
+- Remote fetch filters for small quantized models from `mlx-community` and auto-generates display names and size estimates
+- 10-second timeout on API requests to avoid blocking app launch
+
+**`ModelManagerViewModel.swift`**
+
+- `@Published var availableModels: [AIModelInfo]` — dynamic model list loaded on launch
+- `@Published var downloadedModelIDs: Set<String>` — persisted in `UserDefaults`
+- `@Published var activeModelID: String?` — the currently loaded model
+- `isMLXAvailable: Bool` — compile-time check: `true` on physical macOS/iOS devices, `false` on simulator and non-Apple platforms
+- `downloadAndActivate(_:)` — downloads model from HuggingFace Hub via `loadModelContainer(from:using:configuration:progressHandler:)` with real-time progress tracking. Uses `LLMRegistry` for curated models, falls back to `ModelConfiguration(id:)` for dynamically discovered models. Categorized error messages: network → connection message, disk → storage message, cancelled → silent, fallback → generic safe message
+- `deleteModel(_:)` — deactivates if active, deletes Hub cache files from `{cachesDir}/huggingface/hub/models--{org}--{model}/`, removes from downloaded set
+- `generateSummary(for:)` — creates a `ChatSession` with `maxTokens: 256`, sends a summarization prompt, returns the response
+- `restoreActiveModel()` — called on app launch to reload the previously active model
+- All MLX code paths guarded with `#if canImport(MLXLLM) && !targetEnvironment(simulator)` — prevents simulator crashes from MLX's Metal backend
+
+**Auto-Refresh & Pull-to-Refresh**
+
+- Auto-refresh: `FeedViewModel` runs a background task that refreshes the current feed every 15 minutes (configurable via `settings.autoRefresh` toggle)
+- Posts local notifications via `UNUserNotificationCenter` when new articles are detected
+- Pull-to-refresh: `.refreshable` modifier on `DashboardView` triggers a silent refresh without showing the loading spinner
+- Both use separate codepaths from `selectFeed` to avoid resetting the loading state and destroying the scroll position
 
 **9. Building & Running**
 
 **iOS (Simulator)**
 
+- **One-time prerequisite** for Xcode builds with MLX (Metal shaders):
+  ```bash
+  xcodebuild -downloadComponent MetalToolchain
+  ```
+- **Trusting MLX macros** — `mlx-swift-lm` uses Swift macros (`MLXHuggingFaceMacros`). Xcode requires explicit trust before it will compile them:
+  - **Xcode GUI**: On first build, Xcode shows a dialog: _"Package 'mlx-swift-lm' wants to use macro 'MLXHuggingFaceMacros'"_ → click **Trust & Enable**. This is persisted in the Xcode project and only needs to be done once. If using XcodeGen, re-running `xcodegen generate` resets the project and the trust dialog will appear again on next build.
+  - **xcodebuild CLI**: Pass `-skipMacroValidation` to bypass macro trust (there is no project-level setting for this):
+    ```bash
+    xcodebuild -project Feeds.xcodeproj -scheme Feeds \
+      -destination 'platform=iOS Simulator,name=iPhone 17' \
+      -skipMacroValidation build
+    ```
+  - **Global disable** (persists across all projects for your machine):
+    ```bash
+    defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
+    ```
 - Build natively (macOS CLI only - no `.app` bundle):
   ```bash
   swift build
@@ -382,10 +446,11 @@ feeds-swift-app/
    # Via Xcode: open the project → select iPhone 17 → Product → Run (⌘R)
    open Feeds.xcodeproj
 
-   # Via CLI: build and deploy
+   # Via CLI: build and deploy (requires Metal Toolchain + macro flag)
+   # One-time prerequisite: xcodebuild -downloadComponent MetalToolchain
    xcodebuild -project Feeds.xcodeproj -scheme Feeds \
      -destination 'platform=iOS Simulator,name=iPhone 17' \
-     build
+     -skipMacroValidation build
 
    # Install and launch on the simulator
    xcrun simctl install booted ~/Library/Developer/Xcode/DerivedData/Feeds-*/Build/Products/Debug-iphonesimulator/Feeds.app
@@ -435,7 +500,7 @@ feeds-swift-app/
    xcodebuild -scheme Feeds \
      -destination 'id=<device-udid>' \
      -allowProvisioningUpdates \
-     build
+     -skipMacroValidation build
 
    # Find your device UDID:
    xcrun xctrace list devices
@@ -607,7 +672,7 @@ feeds-swift-app/
 - Build and run on a specific iOS Simulator destination via `xcodebuild`:
   ```bash
   xcodebuild test -scheme Feeds -destination 'platform=iOS Simulator,name=iPhone 17' \
-    -resultBundlePath TestResults.xcresult
+    -skipMacroValidation -resultBundlePath TestResults.xcresult
   ```
 
 **Android Emulator Testing**

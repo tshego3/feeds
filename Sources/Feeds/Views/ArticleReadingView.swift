@@ -8,6 +8,8 @@ struct ArticleReadingView: View {
     @State private var htmlContentHeight: CGFloat = 300
     @Environment(\.themeColors) private var theme
     @EnvironmentObject private var settings: SettingsViewModel
+    @EnvironmentObject private var modelManager: ModelManagerViewModel
+    @State private var generatedSummary: String?
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -174,7 +176,6 @@ struct ArticleReadingView: View {
     }
 
     // MARK: - AI Summary
-    // TODO: Wire on-device SLM summarisation using smollm2:1.7b-instruct-q4_K_M via Ollama/llama.cpp
 
     private var aiSummarySection: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -186,12 +187,50 @@ struct ArticleReadingView: View {
                     .labelXSmall()
                     .foregroundColor(theme.primary)
                     .textCase(.uppercase)
+                Spacer()
+                if let model = modelManager.activeModel {
+                    Text(model.name)
+                        .labelXSmall()
+                        .foregroundColor(theme.outline)
+                }
             }
 
-            Text(viewModel.item.plainDescription)
-                .bodyMedium()
-                .foregroundColor(theme.onSurface)
-                .italic()
+            if modelManager.isGenerating {
+                HStack(spacing: 8) {
+                    ProgressView()
+                        .controlSize(.small)
+                    Text("Generating summary…")
+                        .bodyMedium()
+                        .foregroundColor(theme.onSurfaceVariant)
+                }
+            } else if let summary = generatedSummary {
+                Text(summary)
+                    .bodyMedium()
+                    .foregroundColor(theme.onSurface)
+                    .italic()
+            } else if modelManager.isModelLoaded {
+                Button {
+                    Task {
+                        generatedSummary = await modelManager.generateSummary(
+                            for: viewModel.item.plainDescription
+                        )
+                    }
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "wand.and.stars")
+                            .font(.system(size: 14))
+                        Text("Generate Summary")
+                            .labelSmall()
+                    }
+                    .foregroundColor(theme.primary)
+                }
+                .buttonStyle(.plain)
+            } else {
+                Text("Download a model in Settings → AI Summaries to enable.")
+                    .bodyMedium()
+                    .foregroundColor(theme.onSurfaceVariant)
+                    .italic()
+            }
         }
         .padding(20)
         .background(theme.surfaceContainerLow)

@@ -2,13 +2,16 @@ import Foundation
 
 /// In-memory bookmark store shared across the app.
 /// Uses @MainActor to ensure thread-safe UI updates.
-// TODO: Explore using SQLite (e.g. swift-sqlite or GRDB) to persist saved articles across app launches.
+// TODO: Explore using encrypted SQLite (e.g. GRDB with SQLCipher, or swift-sqlite with encryption)
+//       to persist saved articles across app launches.
 //       Current in-memory store loses all bookmarks on restart. Migration path:
-//       1. Add SQLite dependency to Package.swift
+//       1. Add GRDB + SQLCipher dependency to Package.swift (or use SQLite.swift with SQLCipher)
 //       2. Create a `BookmarkStore` protocol with async CRUD methods
 //       3. Implement `SQLiteBookmarkStore` conforming to that protocol
-//       4. Replace in-memory array with SQLite-backed queries
-//       5. Add migration support for schema changes
+//       4. Use SQLCipher's PRAGMA key to encrypt the database at rest
+//       5. Store the encryption key in the Keychain (never hardcode)
+//       6. Replace in-memory array with SQLite-backed queries
+//       7. Add migration support for schema changes
 @MainActor
 final class BookmarkViewModel: ObservableObject {
 

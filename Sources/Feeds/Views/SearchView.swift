@@ -5,9 +5,31 @@ import SwiftUI
 struct SearchView: View {
     @ObservedObject var viewModel: FeedViewModel
     @State private var searchText = ""
-    // TODO: Load recent searches from persistent storage (UserDefaults or SearchHistoryService)
-    @State private var recentSearches: [String] = []
+    @State private var recentSearches: [String] = UserDefaults.standard.stringArray(forKey: "recentSearches") ?? []
     @Environment(\.themeColors) private var theme
+
+    private static let maxRecentSearches = 10
+
+    private func addRecentSearch(_ term: String) {
+        let trimmed = term.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return }
+        recentSearches.removeAll { $0 == trimmed }
+        recentSearches.insert(trimmed, at: 0)
+        if recentSearches.count > Self.maxRecentSearches {
+            recentSearches = Array(recentSearches.prefix(Self.maxRecentSearches))
+        }
+        UserDefaults.standard.set(recentSearches, forKey: "recentSearches")
+    }
+
+    private func clearRecentSearches() {
+        recentSearches.removeAll()
+        UserDefaults.standard.removeObject(forKey: "recentSearches")
+    }
+
+    private func removeRecentSearch(_ term: String) {
+        recentSearches.removeAll { $0 == term }
+        UserDefaults.standard.set(recentSearches, forKey: "recentSearches")
+    }
 
     private var filteredItems: [FeedItem] {
         guard !searchText.isEmpty else { return viewModel.feedItems }
@@ -44,6 +66,7 @@ struct SearchView: View {
                 TextField("Search articles, sources, or topics...", text: $searchText)
                     .foregroundColor(theme.onSurface)
                     .bodyLarge()
+                    .onSubmit { addRecentSearch(searchText) }
             }
             .padding(20)
             .background(theme.surfaceContainerLow)
@@ -68,7 +91,7 @@ struct SearchView: View {
                     .textCase(.uppercase)
                 Spacer()
                 Button("CLEAR ALL") {
-                    recentSearches.removeAll()
+                    clearRecentSearches()
                 }
                 .labelXSmall()
                 .foregroundColor(theme.primary)
@@ -81,7 +104,7 @@ struct SearchView: View {
                         Text(term)
                             .labelXSmall()
                         Button {
-                            recentSearches.removeAll { $0 == term }
+                            removeRecentSearch(term)
                         } label: {
                             Image(systemName: "xmark")
                                 .font(.system(size: 10))
@@ -181,7 +204,7 @@ struct SearchView: View {
                     .foregroundColor(theme.primary)
                     .lineLimit(2)
 
-                Text(item.description)
+                Text(item.plainDescription)
                     .bodyMedium()
                     .foregroundColor(theme.onSurfaceVariant)
                     .lineLimit(2)

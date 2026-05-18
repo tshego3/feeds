@@ -288,6 +288,7 @@ struct FeaturedArticleCard: View {
 struct ArticleCard: View {
     let item: FeedItem
     @EnvironmentObject private var bookmarks: BookmarkViewModel
+    @EnvironmentObject private var modelManager: ModelManagerViewModel
     @Environment(\.themeColors) private var theme
 
     var body: some View {
@@ -329,16 +330,13 @@ struct ArticleCard: View {
                 .lineLimit(2)
 
             HStack {
-                Button { } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "sparkles")
-                            .font(.system(size: 12))
-                        Text("Summary")
-                            .labelXSmall()
-                    }
-                    .foregroundColor(theme.onSurfaceVariant)
+                HStack(spacing: 4) {
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 12))
+                    Text(modelManager.isModelLoaded ? "AI Summary" : "Summary")
+                        .labelXSmall()
                 }
-                .buttonStyle(.plain)
+                .foregroundColor(modelManager.isModelLoaded ? theme.primary : theme.onSurfaceVariant)
 
                 Spacer()
 

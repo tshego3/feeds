@@ -6,6 +6,9 @@
 
 import Foundation
 import UserNotifications
+import os
+
+private let logger = Logger(subsystem: "com.feeds.app", category: "FeedViewModel")
 
 // "@MainActor" ensures all property updates happen on the main/UI thread.
 // C#: like wrapping every setter in Dispatcher.Invoke() or MainThread.BeginInvokeOnMainThread().
@@ -237,7 +240,9 @@ class FeedViewModel: ObservableObject {
 
     private func requestNotificationPermission() {
         let center = UNUserNotificationCenter.current()
-        center.requestAuthorization(options: [.alert, .badge, .sound]) { _, _ in }
+        center.requestAuthorization(options: [.alert, .badge, .sound]) { _, error in
+            if let error { logger.debug("Notification auth failed: \(error.localizedDescription)") }
+        }
     }
 
     private func postNewArticlesNotification(count: Int, feedTitle: String) {
@@ -251,6 +256,8 @@ class FeedViewModel: ObservableObject {
             content: content,
             trigger: nil
         )
-        UNUserNotificationCenter.current().add(request) { _ in }
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error { logger.debug("Failed to post notification: \(error.localizedDescription)") }
+        }
     }
 }

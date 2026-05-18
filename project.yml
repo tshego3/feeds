@@ -7,6 +7,19 @@ options:
 settings:
   SWIFT_VERSION: "6.0"
   GENERATE_INFOPLIST_FILE: true
+# Note: mlx-swift-lm uses Swift macros (MLXHuggingFaceMacros). When building
+# via xcodebuild CLI, pass -skipMacroValidation to avoid macro trust errors.
+# Also requires Metal Toolchain: xcodebuild -downloadComponent MetalToolchain
+packages:
+  mlx-swift-lm:
+    url: https://github.com/ml-explore/mlx-swift-lm
+    from: "3.31.3"
+  swift-huggingface:
+    url: https://github.com/huggingface/swift-huggingface
+    from: "0.9.0"
+  swift-transformers:
+    url: https://github.com/huggingface/swift-transformers
+    from: "1.3.0"
 targets:
   Feeds:
     type: application
@@ -17,6 +30,17 @@ targets:
           - Resources/**
       - path: Sources/Feeds/Resources
         buildPhase: resources
+    dependencies:
+      - package: mlx-swift-lm
+        product: MLXLLM
+      - package: mlx-swift-lm
+        product: MLXLMCommon
+      - package: mlx-swift-lm
+        product: MLXHuggingFace
+      - package: swift-huggingface
+        product: HuggingFace
+      - package: swift-transformers
+        product: Tokenizers
     settings:
       INFOPLIST_KEY_UILaunchScreen_Generation: true
       INFOPLIST_KEY_CFBundleDisplayName: feeds

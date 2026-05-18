@@ -4,6 +4,7 @@ import SwiftUI
 /// Matches settings/code.html design with glassmorphic cards.
 struct SettingsView: View {
     @EnvironmentObject private var settings: SettingsViewModel
+    @EnvironmentObject private var modelManager: ModelManagerViewModel
     @ObservedObject var feedViewModel: FeedViewModel
     @State private var showExportSheet = false
     @Environment(\.themeColors) private var theme
@@ -14,6 +15,7 @@ struct SettingsView: View {
                 headerSection
                 appearanceSection
                 preferencesSection
+                aiModelSection
                 dataManagementSection
                 footerSection
             }
@@ -41,45 +43,6 @@ struct SettingsView: View {
         }
         .padding(.horizontal, 24)
         .padding(.top, 32)
-    }
-
-    // MARK: - Account
-
-    private var accountSection: some View {
-        settingsSection(title: "Account") {
-            HStack(spacing: 16) {
-                Circle()
-                    .fill(theme.surfaceContainerHighest)
-                    .frame(width: 48, height: 48)
-                    .overlay(
-                    Image(systemName: "person.fill")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(theme.primary)
-                    )
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Guest")
-                        .headlineMedium()
-                        .foregroundColor(theme.primary)
-                    Text("Local only — no account")
-                        .labelSmall()
-                        .foregroundColor(theme.onSurfaceVariant)
-                }
-
-                Spacer()
-
-                Button("Manage") { }
-                    .labelSmall()
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(theme.primary)
-                    .foregroundColor(theme.onPrimary)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                    .buttonStyle(.plain)
-            }
-            .padding(20)
-            .glassPanel()
-        }
     }
 
     // MARK: - Appearance
@@ -256,6 +219,111 @@ struct SettingsView: View {
                 .tint(theme.primary)
         }
         .padding(16)
+    }
+
+    // MARK: - AI Model Management
+
+    private var aiModelSection: some View {
+        settingsSection(title: "AI Summaries") {
+            VStack(spacing: 0) {
+                if !modelManager.isMLXAvailable {
+                    HStack {
+                        Image(systemName: "exclamationmark.triangle")
+                            .foregroundColor(theme.outline)
+                        Text("AI summaries require Apple Silicon (iOS/macOS).")
+                            .bodyMedium()
+                            .foregroundColor(theme.onSurfaceVariant)
+                    }
+                    .padding(16)
+                } else {
+                    // Active model indicator
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("On-Device Model")
+                                .bodyMedium()
+                                .foregroundColor(theme.onSurface)
+                            Text(modelManager.activeModel?.name ?? "No model selected")
+                                .labelXSmall()
+                                .foregroundColor(theme.onSurfaceVariant)
+                        }
+                        Spacer()
+                        if modelManager.isModelLoaded {
+                            Circle()
+                                .fill(.green)
+                                .frame(width: 8, height: 8)
+                        }
+                    }
+                    .padding(16)
+
+                    Rectangle().fill(theme.outlineVariant).frame(height: 1)
+
+                    // Model list
+                    ForEach(modelManager.availableModels) { model in
+                        aiModelRow(model)
+                        if model.id != modelManager.availableModels.last?.id {
+                            Rectangle().fill(theme.outlineVariant.opacity(0.3)).frame(height: 1)
+                                .padding(.leading, 16)
+                        }
+                    }
+                }
+            }
+            .glassPanel()
+        }
+    }
+
+    private func aiModelRow(_ model: AIModelInfo) -> some View {
+        let isActive = modelManager.activeModelID == model.id
+        let isDownloaded = modelManager.downloadedModelIDs.contains(model.id)
+        let isDownloading = modelManager.downloadingModelID == model.id
+
+        return Button {
+            Task { await modelManager.downloadAndActivate(model) }
+        } label: {
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 8) {
+                        Text(model.name)
+                            .bodyMedium()
+                            .foregroundColor(isActive ? theme.primary : theme.onSurface)
+                        Text(model.sizeLabel)
+                            .labelXSmall()
+                            .foregroundColor(theme.outline)
+                    }
+                    Text(model.description)
+                        .labelXSmall()
+                        .foregroundColor(theme.onSurfaceVariant)
+                }
+
+                Spacer()
+
+                if isDownloading {
+                    ProgressView(value: modelManager.downloadProgress)
+                        .frame(width: 40)
+                        .tint(theme.primary)
+                } else if isActive && modelManager.isModelLoaded {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(theme.primary)
+                } else if isDownloaded {
+                    Image(systemName: "arrow.clockwise.circle")
+                        .foregroundColor(theme.onSurfaceVariant)
+                } else {
+                    Image(systemName: "arrow.down.circle")
+                        .foregroundColor(theme.onSurfaceVariant)
+                }
+            }
+            .padding(16)
+        }
+        .buttonStyle(.plain)
+        .disabled(modelManager.isDownloading)
+        .contextMenu {
+            if isDownloaded {
+                Button(role: .destructive) {
+                    modelManager.deleteModel(model)
+                } label: {
+                    Label("Delete Model", systemImage: "trash")
+                }
+            }
+        }
     }
 
     // MARK: - Data Management

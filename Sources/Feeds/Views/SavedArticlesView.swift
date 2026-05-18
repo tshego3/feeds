@@ -7,8 +7,10 @@ struct SavedArticlesView: View {
     @State private var selectedTag = "#all"
     @Environment(\.themeColors) private var theme
 
-    // TODO: Replace hardcoded tags with dynamic tags derived from saved articles
-    private let tags = ["#all", "#readlater", "#research", "#design", "#tech"]
+    private var tags: [String] {
+        let articleTags = Set(bookmarks.savedArticles.map { "#\($0.tag)" })
+        return ["#all"] + articleTags.sorted()
+    }
 
     private var filteredArticles: [SavedArticle] {
         bookmarks.articles(for: selectedTag)

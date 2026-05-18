@@ -14,12 +14,14 @@ import SwiftUI
 struct FeedsApp: App {
     @StateObject private var settings = SettingsViewModel()
     @StateObject private var bookmarkViewModel = BookmarkViewModel()
+    @StateObject private var modelManager = ModelManagerViewModel()
 
     var body: some Scene {
         WindowGroup {
             AppRootView()
                 .environmentObject(settings)
                 .environmentObject(bookmarkViewModel)
+                .environmentObject(modelManager)
         }
     }
 }

@@ -23,6 +23,8 @@ let package = Package(
         .package(url: "https://github.com/ml-explore/mlx-swift-lm", .upToNextMajor(from: "3.31.3")),
         .package(url: "https://github.com/huggingface/swift-huggingface", from: "0.9.0"),
         .package(url: "https://github.com/huggingface/swift-transformers", from: "1.3.0"),
+        .package(url: "https://github.com/groue/GRDB.swift", from: "7.4.1"),
+        .package(url: "https://github.com/apple/swift-crypto", from: "3.10.0"),
     ],
 
     targets: [
@@ -37,6 +39,8 @@ let package = Package(
                 .product(name: "MLXHuggingFace", package: "mlx-swift-lm", condition: .when(platforms: [.macOS, .iOS])),
                 .product(name: "HuggingFace", package: "swift-huggingface", condition: .when(platforms: [.macOS, .iOS])),
                 .product(name: "Tokenizers", package: "swift-transformers", condition: .when(platforms: [.macOS, .iOS])),
+                .product(name: "GRDB", package: "GRDB.swift"),
+                .product(name: "Crypto", package: "swift-crypto"),
             ],
             resources: [.process("Resources")]
         ),

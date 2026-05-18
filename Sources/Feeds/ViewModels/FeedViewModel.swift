@@ -207,9 +207,10 @@ class FeedViewModel: ObservableObject {
         requestNotificationPermission()
         autoRefreshTask = Task { [weak self] in
             while !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(Self.refreshInterval))
-                guard !Task.isCancelled, let self else { return }
+                guard let self else { return }
                 await self.refreshCurrentFeed()
+                try? await Task.sleep(for: .seconds(Self.refreshInterval))
+                guard !Task.isCancelled else { return }
             }
         }
     }

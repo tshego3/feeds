@@ -1,25 +1,42 @@
 import Foundation
 
-/// In-memory bookmark store shared across the app.
+/// Persistent bookmark store backed by encrypted SQLite.
 /// Uses @MainActor to ensure thread-safe UI updates.
-// TODO: Explore using encrypted SQLite (e.g. GRDB with SQLCipher, or swift-sqlite with encryption)
-//       to persist saved articles across app launches.
-//       Current in-memory store loses all bookmarks on restart. Migration path:
-//       1. Add GRDB + SQLCipher dependency to Package.swift (or use SQLite.swift with SQLCipher)
-//       2. Create a `BookmarkStore` protocol with async CRUD methods
-//       3. Implement `SQLiteBookmarkStore` conforming to that protocol
-//       4. Use SQLCipher's PRAGMA key to encrypt the database at rest
-//       5. Store the encryption key in the Keychain (never hardcode)
-//       6. Replace in-memory array with SQLite-backed queries
-//       7. Add migration support for schema changes
 @MainActor
 final class BookmarkViewModel: ObservableObject {
 
     @Published private(set) var savedArticles: [SavedArticle] = []
+    @Published private(set) var isLoading: Bool = false
+    @Published var errorMessage: String?
 
-    init() {}
+    private let store: BookmarkStore
+
+    init(store: BookmarkStore? = nil) {
+        if let store {
+            self.store = store
+        } else {
+            do {
+                self.store = try SQLiteBookmarkStore()
+            } catch {
+                // Fallback: this should not happen in normal operation.
+                // If it does, the app will function without persistence.
+                fatalError("Failed to initialize bookmark database: \(error)")
+            }
+        }
+    }
 
     var hasSavedArticles: Bool { !savedArticles.isEmpty }
+
+    func loadBookmarks() async {
+        isLoading = true
+        defer { isLoading = false }
+        do {
+            savedArticles = try await store.fetchAll()
+            errorMessage = nil
+        } catch {
+            errorMessage = "Unable to load saved articles."
+        }
+    }
 
     func isBookmarked(_ item: FeedItem) -> Bool {
         savedArticles.contains { $0.link == item.link }
@@ -27,7 +44,16 @@ final class BookmarkViewModel: ObservableObject {
 
     func toggle(_ item: FeedItem, source: String = "Feed") {
         if let index = savedArticles.firstIndex(where: { $0.link == item.link }) {
+            let article = savedArticles[index]
             savedArticles.remove(at: index)
+            Task {
+                do {
+                    try await store.delete(byID: article.id)
+                } catch {
+                    savedArticles.insert(article, at: index)
+                    errorMessage = "Failed to remove bookmark."
+                }
+            }
         } else {
             let saved = SavedArticle(
                 title: item.title,
@@ -39,11 +65,27 @@ final class BookmarkViewModel: ObservableObject {
                 imageURL: item.displayImage
             )
             savedArticles.insert(saved, at: 0)
+            Task {
+                do {
+                    try await store.insert(saved)
+                } catch {
+                    savedArticles.removeAll { $0.id == saved.id }
+                    errorMessage = "Failed to save bookmark."
+                }
+            }
         }
     }
 
     func remove(_ article: SavedArticle) {
         savedArticles.removeAll { $0.id == article.id }
+        Task {
+            do {
+                try await store.delete(byID: article.id)
+            } catch {
+                errorMessage = "Failed to remove bookmark."
+                await loadBookmarks()
+            }
+        }
     }
 
     func articles(for tag: String) -> [SavedArticle] {

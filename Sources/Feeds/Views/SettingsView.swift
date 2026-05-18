@@ -310,20 +310,21 @@ struct SettingsView: View {
                     Image(systemName: "arrow.down.circle")
                         .foregroundColor(theme.onSurfaceVariant)
                 }
+
+                if isDownloaded && !isDownloading {
+                    Button(role: .destructive) {
+                        modelManager.deleteModel(model)
+                    } label: {
+                        Image(systemName: "trash")
+                            .foregroundColor(theme.error)
+                    }
+                    .buttonStyle(.plain)
+                }
             }
             .padding(16)
         }
         .buttonStyle(.plain)
         .disabled(modelManager.isDownloading)
-        .contextMenu {
-            if isDownloaded {
-                Button(role: .destructive) {
-                    modelManager.deleteModel(model)
-                } label: {
-                    Label("Delete Model", systemImage: "trash")
-                }
-            }
-        }
     }
 
     // MARK: - Data Management

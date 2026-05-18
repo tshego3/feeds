@@ -29,6 +29,7 @@ struct FeedsApp: App {
 /// Wrapper view that syncs the device color scheme with the theme engine in Auto mode.
 private struct AppRootView: View {
     @EnvironmentObject private var settings: SettingsViewModel
+    @EnvironmentObject private var bookmarks: BookmarkViewModel
     @Environment(\.colorScheme) private var systemColorScheme
 
     private var preferredScheme: ColorScheme? {
@@ -41,6 +42,7 @@ private struct AppRootView: View {
 
     var body: some View {
         ContentView()
+            .task { await bookmarks.loadBookmarks() }
             .preferredColorScheme(preferredScheme)
             .environment(\.themeColors, settings.themeColors)
             .onChange(of: systemColorScheme) { _, newScheme in

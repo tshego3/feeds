@@ -37,6 +37,9 @@ struct ContentView: View {
             viewModel.loadConfig()
             guard let first = viewModel.allFeeds.first else { return }
             viewModel.selectedFeedId = first.id
+            if settings.autoRefresh {
+                viewModel.startAutoRefresh()
+            }
         }
         .onChange(of: settings.autoRefresh) { _, enabled in
             if enabled {
@@ -44,10 +47,6 @@ struct ContentView: View {
             } else {
                 viewModel.stopAutoRefresh()
             }
-        }
-        .onAppear {
-            guard settings.autoRefresh else { return }
-            viewModel.startAutoRefresh()
         }
     }
 

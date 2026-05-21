@@ -186,7 +186,8 @@ struct ContentView: View {
                             viewModel: ArticleReadingViewModel(
                                 item: item,
                                 bookmarkViewModel: bookmarkViewModel,
-                                feedTitle: viewModel.selectedFeed?.title ?? "Source"
+                                feedTitle: viewModel.selectedFeed?.title ?? "Source",
+                                suppressHeroImage: viewModel.selectedFeed?.suppressHeroImage ?? false
                             )
                         )
                         .onAppear { viewModel.markAsRead(item) }
@@ -206,7 +207,8 @@ struct ContentView: View {
                             viewModel: ArticleReadingViewModel(
                                 item: item,
                                 bookmarkViewModel: bookmarkViewModel,
-                                feedTitle: viewModel.selectedFeed?.title ?? "Source"
+                                feedTitle: viewModel.selectedFeed?.title ?? "Source",
+                                suppressHeroImage: viewModel.selectedFeed?.suppressHeroImage ?? false
                             )
                         )
                         .onAppear { viewModel.markAsRead(item) }
@@ -237,7 +239,8 @@ struct ContentView: View {
                             viewModel: ArticleReadingViewModel(
                                 item: item,
                                 bookmarkViewModel: bookmarkViewModel,
-                                feedTitle: viewModel.selectedFeed?.title ?? "Source"
+                                feedTitle: viewModel.selectedFeed?.title ?? "Source",
+                                suppressHeroImage: viewModel.selectedFeed?.suppressHeroImage ?? false
                             )
                         )
                         .onAppear { viewModel.markAsRead(item) }

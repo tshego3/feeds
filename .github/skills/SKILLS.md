@@ -46,7 +46,8 @@ Tests (XCTest / Swift Testing) — tests Models, Services, ViewModels
 2. Use `let` for immutable properties — `var` only when mutation is required.
 3. Keep models pure — no networking, no UI imports, no side effects.
 4. Use computed properties for derived values (e.g., `displayImage: URL?`).
-5. Use `JSONDecoder` for JSON parsing and `XMLParser` with delegate for RSS XML.
+5. Use `JSONDecoder` for JSON parsing, `XMLParser` with delegate for RSS XML, and `SQLiteFeedStore` for feed subscription persistence.
+6. Feed subscriptions are stored in SQLite (not bundled JSON) — use `FeedRecord` for DB rows and `RssFeedModel` at runtime.
 
 ## Networking Skills
 
@@ -83,11 +84,13 @@ Tests (XCTest / Swift Testing) — tests Models, Services, ViewModels
 
 ## Typical Skill Applications
 
-1. Add new RSS feed sources by extending `feeds.json` and updating the feed picker.
-2. Add new view components (cards, lists, detail pages) using existing ViewModel patterns.
-3. Introduce new model types and wire them through services and ViewModels.
-4. Implement search/filter functionality on feed items.
-5. Add cross-platform support (Android via Swift SDK cross-compilation).
+1. Add or remove RSS feed subscriptions dynamically via `SQLiteFeedStore` and `ManageFeedsView`.
+2. Configure per-feed settings (e.g., hero image suppression) stored in SQLite.
+3. Add new view components (cards, lists, detail pages) using existing ViewModel patterns.
+4. Introduce new model types and wire them through services and ViewModels.
+5. Implement search/filter functionality on feed items.
+6. Add cross-platform support (Android via Swift SDK cross-compilation).
+7. Resolve article hero images via the OG image fallback chain (`ImageResolver` + `OpenGraphService`).
 
 ## Reliability and Testability Skills
 
@@ -180,16 +183,15 @@ class FeedViewModel: ObservableObject {
     var hasItems: Bool { !feedItems.isEmpty }
 
     func loadConfig() {
-        guard let url = Bundle.main.url(forResource: "feeds", withExtension: "json"),
-              let data = try? Data(contentsOf: url) else {
-            errorMessage = "Could not load feeds.json"
-            return
-        }
+        let store = SQLiteFeedStore()
         do {
-            let configs = try JSONDecoder().decode([FeedConfig].self, from: data)
-            // flatten categories into allFeeds...
+            let records = try store.fetchAll()
+            if records.isEmpty {
+                try store.seedDefaults(DefaultFeeds.all)
+            }
+            // build allFeeds and menuItems from records...
         } catch {
-            errorMessage = "Failed to parse feeds.json: \(error.localizedDescription)"
+            errorMessage = "Could not load feed subscriptions"
         }
     }
 

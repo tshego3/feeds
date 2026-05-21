@@ -15,6 +15,7 @@ struct SettingsView: View {
                 headerSection
                 appearanceSection
                 preferencesSection
+                feedManagementSection
                 aiModelSection
                 dataManagementSection
                 footerSection
@@ -227,6 +228,35 @@ struct SettingsView: View {
                 .tint(theme.primary)
         }
         .padding(16)
+    }
+
+    // MARK: - Feed Management
+
+    private var feedManagementSection: some View {
+        settingsSection(title: "Feed Subscriptions") {
+            NavigationLink(destination: ManageFeedsView(feedViewModel: feedViewModel)) {
+                HStack(spacing: 16) {
+                    Image(systemName: "antenna.radiowaves.left.and.right")
+                        .font(.system(size: 20))
+                        .foregroundColor(theme.primary)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Manage Feeds")
+                            .bodyMedium()
+                            .foregroundColor(theme.onSurface)
+                        Text("\(feedViewModel.allFeeds.count) subscriptions")
+                            .labelXSmall()
+                            .foregroundColor(theme.onSurfaceVariant)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(theme.onSurfaceVariant)
+                }
+                .padding(16)
+                .glassPanel()
+            }
+            .buttonStyle(.plain)
+        }
     }
 
     // MARK: - AI Model Management

@@ -150,9 +150,13 @@ struct ArticleReadingView: View {
 
     // MARK: - Hero Image
 
+    // NOTE: Some feeds (e.g. HBX) already embed full-width images in article HTML body.
+    // The suppressHeroImage flag is stored per-feed in SQLite to avoid duplicates.
     private var heroImage: some View {
         Group {
-            if settings.showPreviewImages, let url = viewModel.item.displayImage ?? imageResolver.cachedImage(for: viewModel.item.link) ?? viewModel.item.thumbnailImage {
+            if settings.showPreviewImages,
+               !viewModel.suppressHeroImage,
+               let url = viewModel.item.displayImage ?? imageResolver.cachedImage(for: viewModel.item.link) ?? viewModel.item.thumbnailImage {
                 Color.clear
                     .frame(maxWidth: .infinity)
                     .frame(height: 300)

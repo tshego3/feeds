@@ -11,11 +11,13 @@ class ArticleReadingViewModel: ObservableObject {
     private let bookmarkViewModel: BookmarkViewModel
     let item: FeedItem
     let feedTitle: String
+    let suppressHeroImage: Bool  // Feed-level flag — some feeds embed images in HTML content
 
-    init(item: FeedItem, bookmarkViewModel: BookmarkViewModel, feedTitle: String = "Source") {
+    init(item: FeedItem, bookmarkViewModel: BookmarkViewModel, feedTitle: String = "Source", suppressHeroImage: Bool = false) {
         self.item = item
         self.bookmarkViewModel = bookmarkViewModel
         self.feedTitle = feedTitle
+        self.suppressHeroImage = suppressHeroImage
         self.isBookmarked = bookmarkViewModel.isBookmarked(item)
     }
 

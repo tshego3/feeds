@@ -1,31 +1,10 @@
-// RssFeedModel.swift — Feed configuration models, decoded from feeds.json.
+// RssFeedModel.swift — Runtime feed models used throughout the app.
 //
-// C# parallel: these are DTOs / record types you'd deserialize from JSON with System.Text.Json.
+// C# parallel: these are DTOs / record types for representing feed subscriptions at runtime.
 // Swift "struct" = C# "struct" (value type), but Swift structs are used far more often than C# structs.
-// Swift "Codable" protocol ≈ C# [JsonSerializable] or implementing IJsonOnDeserialized — auto JSON support.
 // Swift "Identifiable" protocol ≈ C# "IIdentifiable<T>" — requires an "id" property.
 
 import Foundation
-
-// MARK: - JSON Config Shapes
-// "MARK" comments create section headers in Xcode/VS Code — like #region in C#.
-
-/// The top-level array element from feeds.json.
-/// C#: public record FeedConfig(double Id, string Title, string? Url, List<FeedCategory>? Categories);
-struct FeedConfig: Codable, Identifiable, Equatable {
-    let id: Double
-    let title: String
-    let url: String?
-    let categories: [FeedCategory]?
-}
-
-/// A sub-category within a feed config.
-/// C#: public record FeedCategory(double Id, string Title, string Url);
-struct FeedCategory: Codable, Identifiable, Equatable {
-    let id: Double
-    let title: String
-    let url: String
-}
 
 // MARK: - Runtime Models
 
@@ -35,6 +14,14 @@ struct RssFeedModel: Identifiable, Equatable {
     let id: String          // Using String id for Identifiable conformance
     let title: String
     let url: String
+    let suppressHeroImage: Bool  // If true, article reader skips hero image (feed embeds images in HTML)
+
+    init(id: String, title: String, url: String, suppressHeroImage: Bool = false) {
+        self.id = id
+        self.title = title
+        self.url = url
+        self.suppressHeroImage = suppressHeroImage
+    }
 }
 
 /// Represents a menu entry — either a single feed or a group with sub-feeds.

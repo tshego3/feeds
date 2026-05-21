@@ -4,9 +4,9 @@
 
 - **Purpose**: RSS feed reader that fetches/parses XML feeds, displays articles as image cards in a grid, supports categorized feed navigation
 - **Platforms**: iOS 17+ / macOS 14+ (native) and Android (via [Skip](https://skip.dev/) Fuse mode — shared Swift codebase, SwiftUI → Compose bridge)
-- **Core features**: JSON-based feed config → XML fetch (with proxy fallback) → parse → card grid UI → sidebar with grouped feed navigation → SQLCipher-encrypted bookmark persistence → on-device AI article summaries (Apple Silicon)
-- **Cross-platform imports**: On Android/Linux, networking types require `import FoundationNetworking` and XML parsing requires `import FoundationXML` (conditionally imported via `#if canImport(...)`).
-- **Key models**: `RssFeedModel(id, title, url)`, `FeedItem` with title/link/description/pubDate/imageURLs, `SavedArticle` for bookmarks
+- **Core features**: SQLite-backed feed subscriptions → XML fetch (with proxy fallback) → parse → card grid UI → sidebar with grouped feed navigation → SQLCipher-encrypted bookmark persistence → on-device AI article summaries (Apple Silicon) → dynamic feed management (add/delete/configure without rebuilds)
+- **Cross-platform imports**: On Android/Linux, networking types require `import FoundationNetworking` and XML parsing requires `import FoundationXML` (conditionally imported via `#if canImport(...)`).  
+- **Key models**: `RssFeedModel(id, title, url, suppressHeroImage)`, `FeedRecord` (SQLite row), `FeedItem` with title/link/description/pubDate/imageURLs, `SavedArticle` for bookmarks
 
 **2. Prerequisites & Tooling Setup**
 
@@ -147,6 +147,7 @@ feeds-swift-app/
 │       │   ├── AppTab.swift
 │       │   ├── DiscoverFeed.swift
 │       │   ├── FeedItem.swift
+│       │   ├── FeedRecord.swift
 │       │   ├── RssFeedModel.swift
 │       │   └── SavedArticle.swift
 │       ├── Views/
@@ -156,6 +157,7 @@ feeds-swift-app/
 │       │   ├── ArticleReadingView.swift
 │       │   ├── ExploreView.swift
 │       │   ├── HTMLContentView.swift
+│       │   ├── ManageFeedsView.swift
 │       │   ├── NewArticlesBanner.swift
 │       │   ├── SearchView.swift
 │       │   ├── SavedArticlesView.swift
@@ -169,13 +171,17 @@ feeds-swift-app/
 │       │   ├── FeedViewModel.swift
 │       │   ├── ArticleReadingViewModel.swift
 │       │   ├── BookmarkViewModel.swift
+│       │   ├── ImageResolver.swift
 │       │   ├── ModelManagerViewModel.swift
 │       │   └── SettingsViewModel.swift
 │       ├── Services/
 │       │   ├── BookmarkEncryptionService.swift  # Key management for SQLCipher
 │       │   ├── BookmarkStore.swift              # Protocol
+│       │   ├── DefaultFeeds.swift               # Seed data for first launch
 │       │   ├── InMemoryBookmarkStore.swift      # Test/fallback impl
+│       │   ├── OpenGraphService.swift           # OG image extraction
 │       │   ├── SQLiteBookmarkStore.swift        # SQLCipher-encrypted persistence
+│       │   ├── SQLiteFeedStore.swift            # Feed subscription persistence
 │       │   ├── FeedService.swift
 │       │   ├── ModelRegistryService.swift
 │       │   └── RSSXMLParser.swift
@@ -189,7 +195,6 @@ feeds-swift-app/
 │           │       ├── Contents.json
 │           │       └── logo.png
 │           ├── ai_models.json
-│           ├── feeds.json
 │           └── logo.svg
 ├── Tests/
 │   └── FeedsTests/
@@ -210,12 +215,14 @@ feeds-swift-app/
 
 **`RssFeedModel.swift`**
 
-- `struct FeedConfig: Codable, Identifiable` - `id: Double, title: String, url: String?, categories: [FeedCategory]?`
-  <!-- C#: public record FeedConfig(double Id, string Title, string? Url, List<FeedCategory>? Categories); -->
-- `struct FeedCategory: Codable, Identifiable` - `id: Double, title: String, url: String`
-- `struct RssFeedModel: Identifiable` - flattened runtime model with `id, title, url`
+- `struct RssFeedModel: Identifiable` - runtime model with `id, title, url, suppressHeroImage`
 - `enum FeedMenuItem: Identifiable` - menu hierarchy: `.single(RssFeedModel)` for standalone feeds, `.group(id, title, feeds)` for categorized feeds with sub-items
-- Bundle `feeds.json` in `Resources/` and decode with `JSONDecoder` (C#: `JsonSerializer.Deserialize<T>()`)
+
+**`FeedRecord.swift`**
+
+- `struct FeedRecord: Identifiable, Equatable` — SQLite persistence row: `id, title, url, groupId, groupTitle, sortOrder, suppressHeroImage`
+- Maps to `RssFeedModel` at runtime; the `suppressHeroImage` flag controls hero image rendering per-feed
+- Feeds are stored in SQLite (not bundled JSON) — allows dynamic add/remove without app rebuilds
 
 **`FeedItem.swift`**
 
@@ -265,6 +272,28 @@ feeds-swift-app/
   - Android/Linux: stored in a protected file (0600 permissions) at `~/.feeds/.bookmark_key`
   - Key is a 64-character hex string (256-bit entropy from `SecRandomCopyBytes` / `/dev/urandom`)
 
+**Feed Subscription Persistence (SQLite)**
+
+- `SQLiteFeedStore`: CRUD operations for feed subscriptions stored in SQLite (via SkipSQLPlus)
+  - Table: `feed_subscription(id INTEGER PK AUTOINCREMENT, title TEXT, url TEXT, groupId TEXT?, groupTitle TEXT?, sortOrder INTEGER, suppressHeroImage INTEGER)`
+  - Methods: `fetchAll()`, `insert(_:)`, `delete(byID:)`, `updateSuppressHeroImage(feedID:value:)`, `seedDefaults(_:)`, `isEmpty()`, `shouldSuppressHeroImage(feedID:)`, `heroImageSuppressedIDs()`
+  - Schema migration via `userVersion` pragma (same pattern as BookmarkStore)
+- `DefaultFeeds`: static seed data (`enum DefaultFeeds { static let all: [FeedRecord] }`) containing all 43 default feeds — loaded on first launch when the database is empty
+- The `suppressHeroImage` flag allows per-feed hero image suppression (e.g., feeds with unreliable OG images)
+
+**`OpenGraphService.swift`**
+
+- `struct OpenGraphService` — extracts `og:image` meta tags from article HTML
+- `func fetchOGImageURL(for articleURL: URL) async throws -> URL?` — fetches HTML, parses `<meta property="og:image" content="...">` via regex
+- Handles HTML entity decoding (hex entities `&#x3A;`, decimal entities `&#58;`, named entities `&amp;`) for URLs encoded with entities (e.g., Hypebeast)
+
+**`ImageResolver.swift`** (in ViewModels/)
+
+- `class ImageResolver: ObservableObject` — resolves article hero images with fallback chain
+- Resolution priority: (1) feed item's `imageURL`, (2) OpenGraph `og:image` from article HTML
+- `@Published private var cache: [String: URL]` — per-session in-memory cache to avoid redundant fetches
+- Respects `suppressHeroImage` flag and user `showImages` setting toggle
+
 **6. View Layer (SwiftUI)**
 
 > **C# dev note - SwiftUI vs Blazor/MAUI/WPF:**
@@ -307,6 +336,13 @@ feeds-swift-app/
 - Selected feed shows a checkmark indicator
 - On feed selection, collapses sidebar to detail-only on compact (iPhone) devices via `@Binding columnVisibility`
 
+**`ManageFeedsView.swift`**
+
+- Full feed management UI: list all subscriptions, swipe-to-delete, toggle hero image suppression per-feed
+- `AddFeedSheet`: form for adding new feeds with title, URL, optional group, and hero image suppression toggle
+- URL validation: checks for valid scheme (http/https) and non-empty host before insertion
+- Accessible via Settings → Feed Subscriptions → Manage Feeds
+
 **7. ViewModel**
 
 > **C# dev note - MVVM in Swift:**
@@ -328,9 +364,12 @@ feeds-swift-app/
 - `var hasItems: Bool { !feedItems.isEmpty }` - computed property for view rendering
 - Uses `os.Logger` (subsystem: `co.za.eoitech.feeds`, category: `FeedViewModel`) for operational logging
 - Accepts `FeedServiceProtocol` via `init(feedService:)` for testable dependency injection (defaults to `FeedService()`)
-- `func loadConfig()` - decode feeds.json, build flat `allFeeds` list and hierarchical `menuItems` for grouped navigation
+- `func loadConfig()` - load feed subscriptions from SQLite (seeds defaults on first launch), build flat `allFeeds` list and hierarchical `menuItems` for grouped navigation
 - `func selectFeed(_ feed: RssFeedModel) async` - set selected, set `isLoading`, call `fetchFeed`, update `feedItems`
 - `func refreshFeed() async` — silent refresh (no loading spinner) for pull-to-refresh
+- `func addFeed(title:url:groupTitle:suppressHeroImage:)` — insert new subscription into SQLite and reload config
+- `func deleteFeed(_:)` — remove subscription from SQLite and reload config
+- `func toggleSuppressHeroImage(_:)` — toggle hero image suppression per-feed in SQLite
 - `func startAutoRefresh()` / `func stopAutoRefresh()` — 15-minute background refresh with notification posting
 - 3-tier error handling: `FeedError` cases → user-safe messages, `URLError` → network message, catch-all → generic message
 - `func discoverFeeds(query:)` — search feeds, `func generateOPML()` — export subscriptions as OPML

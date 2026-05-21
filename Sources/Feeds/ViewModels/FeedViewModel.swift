@@ -49,46 +49,55 @@ class FeedViewModel: ObservableObject {
 
     // MARK: - Load Config
 
-    /// Reads feeds.json from the app bundle and flattens categories into allFeeds.
-    /// C#: public void LoadConfig() { var json = File.ReadAllText("feeds.json"); ... }
+    /// Loads feed subscriptions from SQLite (seeds defaults on first launch).
+    /// C#: public void LoadConfig() { var records = feedStore.GetAll(); ... }
     func loadConfig() {
-        // "Bundle.main" = the app's resource bundle. C#: Assembly.GetExecutingAssembly() or AppContext.BaseDirectory.
-        // "guard let url = Bundle.main.url(...) else { return }" — safe unwrap + early exit.
-        // C#: if (!File.Exists(path)) return;
-        guard let url = Bundle.main.url(forResource: "feeds", withExtension: "json"),
-              let data = try? Data(contentsOf: url) else {
-            errorMessage = "Could not load feeds.json"
-            return
-        }
-
-        // "do { try } catch { }" = C# "try { } catch (Exception ex) { }"
         do {
-            // JSONDecoder ≈ C# JsonSerializer.Deserialize<T>()
-            let configs = try JSONDecoder().decode([FeedConfig].self, from: data)
+            let store = try SQLiteFeedStore()
+
+            // Seed defaults on first launch — C#: if (!db.Feeds.Any()) db.SeedDefaults();
+            if store.isEmpty() {
+                try store.seedDefaults(DefaultFeeds.all)
+            }
+
+            let records = try store.fetchAll()
             var feeds: [RssFeedModel] = []
             var items: [FeedMenuItem] = []
 
-            for config in configs {
-                if let categories = config.categories {
-                    // Build sub-feeds and group them into a menu item
-                    var subFeeds: [RssFeedModel] = []
-                    for cat in categories {
-                        let feed = RssFeedModel(id: "\(config.id)-\(cat.id)", title: cat.title, url: cat.url)
-                        subFeeds.append(feed)
-                        feeds.append(feed)
+            // Group records by groupId — C#: records.GroupBy(r => r.GroupId)
+            var groupedFeeds: [(groupId: String, groupTitle: String, feeds: [RssFeedModel])] = []
+            var seenGroups: [String: Int] = [:] // groupId → index in groupedFeeds
+
+            for record in records {
+                let feed = RssFeedModel(
+                    id: "\(record.id)",
+                    title: record.title,
+                    url: record.url,
+                    suppressHeroImage: record.suppressHeroImage
+                )
+                feeds.append(feed)
+
+                if let groupId = record.groupId, let groupTitle = record.groupTitle {
+                    if let idx = seenGroups[groupId] {
+                        groupedFeeds[idx].feeds.append(feed)
+                    } else {
+                        seenGroups[groupId] = groupedFeeds.count
+                        groupedFeeds.append((groupId: groupId, groupTitle: groupTitle, feeds: [feed]))
                     }
-                    items.append(.group(id: "\(config.id)", title: config.title, feeds: subFeeds))
-                } else if let url = config.url {
-                    let feed = RssFeedModel(id: "\(config.id)", title: config.title, url: url)
-                    feeds.append(feed)
+                } else {
                     items.append(.single(feed))
                 }
+            }
+
+            // Append groups after singles (preserving sortOrder from DB)
+            for group in groupedFeeds {
+                items.append(.group(id: "group-\(group.groupId)", title: group.groupTitle, feeds: group.feeds))
             }
 
             allFeeds = feeds
             menuItems = items
         } catch {
-            errorMessage = "Unable to load feed configuration. Please reinstall the app."
+            errorMessage = "Unable to load feed subscriptions. Please try again."
         }
     }
 
@@ -240,6 +249,63 @@ class FeedViewModel: ObservableObject {
             }
         } catch {
             // Silent failure on background refresh — don't overwrite existing content with an error
+        }
+    }
+
+    // MARK: - Feed Management
+
+    /// Adds a new feed subscription to the SQLite store and reloads config.
+    /// C#: public void AddFeed(string title, string url, string? groupTitle, bool suppressHeroImage)
+    func addFeed(title: String, url: String, groupTitle: String?, suppressHeroImage: Bool) {
+        do {
+            let store = try SQLiteFeedStore()
+            let maxSort = allFeeds.count * 10
+            let groupId = groupTitle.map { $0.lowercased().replacingOccurrences(of: " ", with: "-") }
+            let record = FeedRecord(
+                id: 0,
+                title: title,
+                url: url,
+                groupId: groupId,
+                groupTitle: groupTitle,
+                sortOrder: maxSort,
+                suppressHeroImage: suppressHeroImage
+            )
+            try store.insert(record)
+            loadConfig()
+        } catch {
+            errorMessage = "Failed to add feed. Please try again."
+        }
+    }
+
+    /// Deletes a feed subscription from the SQLite store and reloads config.
+    /// C#: public void DeleteFeed(RssFeedModel feed)
+    func deleteFeed(_ feed: RssFeedModel) {
+        guard let feedID = Int(feed.id) else { return }
+        do {
+            let store = try SQLiteFeedStore()
+            try store.delete(byID: feedID)
+            loadConfig()
+            // Clear selection if deleted feed was active
+            if selectedFeedId == feed.id {
+                selectedFeedId = nil
+                selectedFeed = nil
+                feedItems = []
+            }
+        } catch {
+            errorMessage = "Failed to remove feed. Please try again."
+        }
+    }
+
+    /// Toggles the suppressHeroImage flag for a feed and reloads config.
+    /// C#: public void ToggleSuppressHeroImage(RssFeedModel feed)
+    func toggleSuppressHeroImage(_ feed: RssFeedModel) {
+        guard let feedID = Int(feed.id) else { return }
+        do {
+            let store = try SQLiteFeedStore()
+            try store.updateSuppressHeroImage(feedID: feedID, value: !feed.suppressHeroImage)
+            loadConfig()
+        } catch {
+            errorMessage = "Failed to update feed setting."
         }
     }
 }

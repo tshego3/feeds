@@ -43,8 +43,10 @@ targets:
     dependencies:
       - package: skip-fuse
         product: SkipFuse
+        embed: true
       - package: skip-fuse-ui
         product: SkipFuseUI
+        embed: true
       - package: mlx-swift-lm
         product: MLXLLM
       - package: mlx-swift-lm
@@ -57,6 +59,7 @@ targets:
         product: Tokenizers
       - package: skip-sql
         product: SkipSQLPlus
+        embed: true
     settings:
       INFOPLIST_KEY_UILaunchScreen_Generation: true
       INFOPLIST_KEY_CFBundleDisplayName: feeds

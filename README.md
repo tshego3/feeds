@@ -796,6 +796,9 @@ feeds-swift-app/
 | `failed to find blueprint corresponding to PIF GUID: "PACKAGE-RESOURCE:SkipSQLPlus"` | Stale SPM build cache after dependency changes | `rm -rf .build && swift package resolve` |
 | `failed to load toolchain: toolchain 'com.apple.dt.toolchain.XcodeDefault' already registered` | A symlink in `~/Library/Developer/Toolchains/` points back to Xcode's toolchain, creating a duplicate | Remove the offending symlink: `rm ~/Library/Developer/Toolchains/swift-<version>.xctoolchain` (only if it symlinks to `XcodeDefault.xctoolchain`) |
 | Xcode macro trust dialog reappears after `xcodegen generate` | XcodeGen regenerates the project, resetting macro trust | Either re-trust in the dialog, pass `-skipMacroValidation` to `xcodebuild`, or run `defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES` |
+| `SWBBuildService quit unexpectedly` | Corrupted Xcode build service state (derived data or caches) | Quit Xcode, run `rm -rf ~/Library/Developer/Xcode/DerivedData/feeds-* && rm -rf ~/Library/Caches/com.apple.dt.Xcode`, then reopen. If it persists, restart macOS. |
+| `dyld: Library not loaded: @rpath/SkipFuse.framework/SkipFuse` (physical device crash at launch) | Dynamic frameworks (SkipFuse, SkipFuseUI, SkipSQLPlus) not embedded in the app bundle — works on simulator but crashes on device | Add `embed: true` to dynamic framework dependencies in `project.yml` (Skip packages only — MLX/HuggingFace/Tokenizers are static and must NOT have `embed: true`), then `xcodegen generate` and clean build |
+| `lstat(.../<PackageName>): No such file or directory` during embed phase | `embed: true` set on a static library package dependency — Xcode tries to copy a framework that doesn't exist | Remove `embed: true` from that dependency in `project.yml` (only dynamic frameworks like SkipFuse/SkipFuseUI/SkipSQLPlus need embedding) |
 
 **14. Resources**
 

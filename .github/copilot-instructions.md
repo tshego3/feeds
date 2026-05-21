@@ -27,6 +27,7 @@ These rules are mandatory for all feature work, bug fixes, and refactors in this
 4. Use `@State` for view-local UI state only (toggles, text fields, selections).
 5. Use `@Binding` to pass mutable state down to child views.
 6. Do not use singletons or global mutable state — prefer `ObservableObject` injection.
+7. **XcodeGen `project.yml` dependency embedding:** In `project.yml`, only add `embed: true` to **dynamic framework** dependencies (SkipFuse, SkipFuseUI, SkipSQLPlus). **Never** add `embed: true` to static library dependencies (MLXLLM, MLXLMCommon, MLXHuggingFace, HuggingFace, Tokenizers) — Xcode will fail with `lstat: No such file or directory` because static libraries don't produce standalone `.framework` bundles. Dynamic frameworks must be embedded or the app will crash on physical devices with `dyld: Library not loaded`.
 
 ## 4) SwiftUI View & Routing Rules
 

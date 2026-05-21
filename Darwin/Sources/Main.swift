@@ -1,5 +1,7 @@
 import SwiftUI
+#if canImport(Feeds)
 import Feeds
+#endif
 
 private typealias AppRootView = FeedsRootView
 private typealias AppDelegate = FeedsAppDelegate

@@ -72,6 +72,15 @@ Tests (XCTest / Swift Testing) — tests Models, Services, ViewModels
 12. Ensure failures surface a user-safe message with a clear next step.
 13. Prefer small functions, small diffs, and direct control flow.
 
+## XcodeGen & Build Packaging Skills
+
+1. When adding dependencies to `project.yml`, determine if the package product is a **dynamic framework** or a **static library**.
+2. Add `embed: true` only to dynamic framework dependencies (e.g., SkipFuse, SkipFuseUI, SkipSQLPlus) — these must be copied into `Feeds.app/Frameworks/` for physical device deployment.
+3. Never add `embed: true` to static library dependencies (e.g., MLXLLM, MLXLMCommon, MLXHuggingFace, HuggingFace, Tokenizers) — they link directly into the binary and have no `.framework` bundle to embed.
+4. After changing `project.yml`, always regenerate: `xcodegen generate`.
+5. If the app crashes on device launch with `dyld: Library not loaded: @rpath/<Name>.framework/<Name>`, the fix is `embed: true` on that dependency.
+6. If the build fails with `lstat(.../<Name>): No such file or directory`, the fix is removing `embed: true` from that dependency (it's static, not dynamic).
+
 ## Typical Skill Applications
 
 1. Add new RSS feed sources by extending `feeds.json` and updating the feed picker.

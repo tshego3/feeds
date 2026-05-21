@@ -9,6 +9,7 @@ struct ArticleReadingView: View {
     @Environment(\.themeColors) var theme
     @EnvironmentObject var settings: SettingsViewModel
     @EnvironmentObject var modelManager: ModelManagerViewModel
+    @EnvironmentObject var imageResolver: ImageResolver
     @State var generatedSummary: String?
 
     var body: some View {
@@ -56,6 +57,11 @@ struct ArticleReadingView: View {
                     }
                 }
         )
+        .task {
+            if viewModel.item.displayImage == nil {
+                imageResolver.resolve(link: viewModel.item.link)
+            }
+        }
     }
 
     // MARK: - Floating Bar
@@ -146,7 +152,7 @@ struct ArticleReadingView: View {
 
     private var heroImage: some View {
         Group {
-            if let url = viewModel.item.displayImage {
+            if settings.showPreviewImages, let url = viewModel.item.displayImage ?? imageResolver.cachedImage(for: viewModel.item.link) ?? viewModel.item.thumbnailImage {
                 Color.clear
                     .frame(maxWidth: .infinity)
                     .frame(height: 300)

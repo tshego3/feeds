@@ -216,3 +216,13 @@ if viewModel.isLoading {
 4. **Always initialize collections to `[]`** — never leave them as implicitly unwrapped
 5. **Use `@MainActor`** on ViewModels to ensure UI updates happen on the main thread
 6. **Use `.task { }` for initial data load** — not `.onAppear` with manual `Task { }`
+
+## 18) C# Developer Context Rules
+
+This codebase is maintained by a developer transitioning from C#/.NET. The following rules ensure continuity and learning:
+
+1. **Preserve C# parallel comments.** Inline comments that explain Swift concepts using C# analogies (e.g., `// C#: like HttpClient`, `// C#: public required FeedItem Item { get; init; }`) are intentional learning aids. Never remove, rewrite, or condense them.
+2. **Add C# parallels to new code.** When introducing new Swift patterns, include a brief C# equivalent comment so the mapping is clear (e.g., `// "guard let" = C#: if (x == null) return;`).
+3. **Use familiar terminology in comments.** Refer to C# concepts by name: `INotifyPropertyChanged`, `ObservableCollection`, `DI container`, `async Task`, `LINQ`, `record`, `POCO`, `UserControl`, etc.
+4. **Do not strip explanatory comments during edits.** If modifying a block that has inline C# comments, carry them forward into the new code. If the Swift construct changes, update the C# parallel to match the new pattern.
+5. **Comment density is acceptable.** This project intentionally has higher comment density than typical Swift projects. Do not reduce it in the name of "clean code."

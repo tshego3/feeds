@@ -14,18 +14,32 @@ struct FeedItem: Identifiable, Equatable, Hashable {
         hasher.combine(id)
     }
     // "UUID()" auto-generates — like "Guid.NewGuid()" in C#.
-    let id = UUID()
+    let id: UUID
     let title: String
     let link: String
     let description: String
     let pubDate: String
     let imageURLs: [String?]    // Array of nullable strings — C#: List<string?>
+    let feedThumbnailURL: String?  // Channel-level image URL as fallback
+
+    init(title: String, link: String, description: String, pubDate: String, imageURLs: [String?], feedThumbnailURL: String? = nil) {
+        self.id = UUID()
+        self.title = title
+        self.link = link
+        self.description = description
+        self.pubDate = pubDate
+        self.imageURLs = imageURLs
+        self.feedThumbnailURL = feedThumbnailURL
+    }
 
     // Computed property — C#: public Uri? DisplayImage => ...
-    // "var" for computed props (must be mutable syntax even though it's read-only).
-    // "URL" in Swift = "Uri" in C#.
     var displayImage: URL? {
         imageURLs.compactMap { $0 }.compactMap { URL(string: $0) }.first
+    }
+
+    var thumbnailImage: URL? {
+        guard let urlString = feedThumbnailURL else { return nil }
+        return URL(string: urlString)
     }
 
     /// Plain-text version of description with HTML tags stripped. Safe for card previews.

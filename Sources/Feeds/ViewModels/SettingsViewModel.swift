@@ -18,6 +18,10 @@ class SettingsViewModel: ObservableObject {
         didSet { defaults.set(showAISummaries, forKey: "showAISummaries") }
     }
 
+    @Published var showPreviewImages: Bool = true {
+        didSet { defaults.set(showPreviewImages, forKey: "showPreviewImages") }
+    }
+
     @Published var selectedTheme: String = "Dark" {
         didSet {
             defaults.set(selectedTheme, forKey: "selectedTheme")
@@ -48,6 +52,7 @@ class SettingsViewModel: ObservableObject {
         self.autoRefresh = defaults.object(forKey: "autoRefresh") as? Bool ?? false
         self.markReadOnScroll = defaults.object(forKey: "markReadOnScroll") as? Bool ?? true
         self.showAISummaries = defaults.object(forKey: "showAISummaries") as? Bool ?? true
+        self.showPreviewImages = defaults.object(forKey: "showPreviewImages") as? Bool ?? true
         self.selectedTheme = defaults.string(forKey: "selectedTheme") ?? "Dark"
         guard self.selectedTheme != "Auto" else { return }
         self.themeColors = Theme.resolve(self.selectedTheme)

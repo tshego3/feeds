@@ -31,6 +31,8 @@ class RSSXMLParser: NSObject, XMLParserDelegate {
     private var currentPubDate = ""
     private var currentImageURLs: [String?] = []
     private var insideItem = false
+    private var insideChannelImage = false
+    private var channelImageURL: String?
 
     // MARK: - Public API
 
@@ -57,6 +59,10 @@ class RSSXMLParser: NSObject, XMLParserDelegate {
                 attributes attributeDict: [String: String] = [:]) {
         currentElement = elementName
 
+        if elementName == "image" && !insideItem {
+            insideChannelImage = true
+        }
+
         if elementName == "item" {
             // Reset accumulators for new item
             insideItem = true
@@ -79,6 +85,12 @@ class RSSXMLParser: NSObject, XMLParserDelegate {
     /// Called with text content between tags. C#: void OnText(string text)
     /// "+=" appends — same as C# string concatenation (parser may call this multiple times per element).
     func parser(_ parser: XMLParser, foundCharacters string: String) {
+        // Capture channel-level <image><url> text
+        if insideChannelImage && currentElement == "url" {
+            channelImageURL = (channelImageURL ?? "") + string
+            return
+        }
+
         // "guard" = early return. C#: if (!insideItem) return;
         guard insideItem else { return }
 
@@ -95,6 +107,10 @@ class RSSXMLParser: NSObject, XMLParserDelegate {
     /// Called when a closing XML tag is found. C#: void OnEndElement(string name)
     func parser(_ parser: XMLParser, didEndElement elementName: String,
                 namespaceURI: String?, qualifiedName qName: String?) {
+        if elementName == "image" && !insideItem {
+            insideChannelImage = false
+        }
+
         if elementName == "item" {
             // ".trimmingCharacters(in:)" = C# ".Trim()"
             // ".whitespaceAndNewlines" = C# char.IsWhiteSpace equivalent
@@ -103,7 +119,8 @@ class RSSXMLParser: NSObject, XMLParserDelegate {
                 link: currentLink.trimmingCharacters(in: .whitespacesAndNewlines),
                 description: currentDescription.trimmingCharacters(in: .whitespacesAndNewlines),
                 pubDate: currentPubDate.trimmingCharacters(in: .whitespacesAndNewlines),
-                imageURLs: currentImageURLs
+                imageURLs: currentImageURLs,
+                feedThumbnailURL: channelImageURL?.trimmingCharacters(in: .whitespacesAndNewlines)
             )
             items.append(item)  // C#: items.Add(item)
             insideItem = false

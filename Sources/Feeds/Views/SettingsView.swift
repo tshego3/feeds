@@ -198,6 +198,14 @@ struct SettingsView: View {
                     subtitle: "Display AI-generated article summaries in the reader",
                     isOn: $settings.showAISummaries
                 )
+
+                Rectangle().fill(theme.outlineVariant).frame(height: 1)
+
+                preferenceToggle(
+                    title: "Show Preview Images",
+                    subtitle: "Display article and feed thumbnail images in cards and reader",
+                    isOn: $settings.showPreviewImages
+                )
             }
             .glassPanel()
         }

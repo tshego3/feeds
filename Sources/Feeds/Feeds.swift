@@ -8,6 +8,7 @@ import SkipFuse
     @StateObject var settings = SettingsViewModel()
     @StateObject var bookmarkViewModel = BookmarkViewModel()
     @StateObject var modelManager = ModelManagerViewModel()
+    @StateObject var imageResolver = ImageResolver()
 
     /* SKIP @bridge */public init() {}
 
@@ -16,6 +17,7 @@ import SkipFuse
             .environmentObject(settings)
             .environmentObject(bookmarkViewModel)
             .environmentObject(modelManager)
+            .environmentObject(imageResolver)
     }
 }
 

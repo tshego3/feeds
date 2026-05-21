@@ -171,14 +171,20 @@ struct DashboardView: View {
 struct FeaturedArticleCard: View {
     let item: FeedItem
     @EnvironmentObject var bookmarks: BookmarkViewModel
+    @EnvironmentObject var settings: SettingsViewModel
+    @EnvironmentObject var imageResolver: ImageResolver
     @Environment(\.themeColors) var theme
 
-    private var hasImage: Bool { item.displayImage != nil }
+    private var resolvedImageURL: URL? {
+        item.displayImage ?? imageResolver.cachedImage(for: item.link) ?? item.thumbnailImage
+    }
+
+    private var hasImage: Bool { resolvedImageURL != nil }
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             // Image
-            if let url = item.displayImage {
+            if settings.showPreviewImages, let url = resolvedImageURL {
                 Color.clear
                     .frame(maxWidth: .infinity)
                     .frame(height: 380)
@@ -273,6 +279,11 @@ struct FeaturedArticleCard: View {
             RoundedRectangle(cornerRadius: 16)
                 .stroke(theme.outlineVariant, lineWidth: 1)
         )
+        .task {
+            if item.displayImage == nil {
+                imageResolver.resolve(link: item.link)
+            }
+        }
     }
 
     private var fallbackImage: some View {
@@ -289,12 +300,18 @@ struct ArticleCard: View {
     let item: FeedItem
     @EnvironmentObject var bookmarks: BookmarkViewModel
     @EnvironmentObject var modelManager: ModelManagerViewModel
+    @EnvironmentObject var settings: SettingsViewModel
+    @EnvironmentObject var imageResolver: ImageResolver
     @Environment(\.themeColors) var theme
+
+    private var resolvedImageURL: URL? {
+        item.displayImage ?? imageResolver.cachedImage(for: item.link) ?? item.thumbnailImage
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Thumbnail
-            if let url = item.displayImage {
+            if settings.showPreviewImages, let url = resolvedImageURL {
                 Color.clear
                     .frame(maxWidth: .infinity)
                     .frame(height: 180)
@@ -355,6 +372,11 @@ struct ArticleCard: View {
             RoundedRectangle(cornerRadius: 16)
                 .stroke(theme.outlineVariant, lineWidth: 1)
         )
+        .task {
+            if item.displayImage == nil {
+                imageResolver.resolve(link: item.link)
+            }
+        }
     }
 }
 
@@ -362,7 +384,13 @@ struct ArticleCard: View {
 
 struct CompactArticleRow: View {
     let item: FeedItem
+    @EnvironmentObject var settings: SettingsViewModel
+    @EnvironmentObject var imageResolver: ImageResolver
     @Environment(\.themeColors) var theme
+
+    private var resolvedImageURL: URL? {
+        item.displayImage ?? imageResolver.cachedImage(for: item.link) ?? item.thumbnailImage
+    }
 
     var body: some View {
         HStack(spacing: 16) {
@@ -384,7 +412,7 @@ struct CompactArticleRow: View {
 
             Spacer()
 
-            if let url = item.displayImage {
+            if settings.showPreviewImages, let url = resolvedImageURL {
                 Color.clear
                     .frame(width: 80, height: 60)
                     .overlay(
@@ -411,5 +439,10 @@ struct CompactArticleRow: View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(theme.outlineVariant.opacity(0.3), lineWidth: 1)
         )
+        .task {
+            if item.displayImage == nil {
+                imageResolver.resolve(link: item.link)
+            }
+        }
     }
 }

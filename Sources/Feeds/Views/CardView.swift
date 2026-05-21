@@ -9,10 +9,17 @@ import SwiftUI
 /// C#: public partial class CardView : ContentView { public FeedItem Item { get; set; } }
 struct CardView: View {
     @Environment(\.themeColors) var theme
+    @EnvironmentObject var settings: SettingsViewModel
+    @EnvironmentObject var imageResolver: ImageResolver
 
     // "let" property = immutable, set once at init. C#: public required FeedItem Item { get; init; }
     // No "@State" because this view doesn't own/mutate this data — it just displays it.
     let item: FeedItem
+
+    /// Resolved image URL: RSS image first, then OG image, then channel thumbnail.
+    private var resolvedImageURL: URL? {
+        item.displayImage ?? imageResolver.cachedImage(for: item.link) ?? item.thumbnailImage
+    }
 
     var body: some View {
         // VStack = vertical StackLayout. C#: new StackLayout { Orientation = Vertical }
@@ -22,7 +29,7 @@ struct CardView: View {
             // AsyncImage loads an image from a URL asynchronously.
             // C#: like an Image control with an HttpClient-backed ImageSource.
             // "if let url" safely unwraps the optional — C#: if (item.DisplayImage is Uri url) { }
-            if let url = item.displayImage {
+            if settings.showPreviewImages, let url = resolvedImageURL {
                 AsyncImage(url: url) { phase in
                     // "switch" on the loading phase — C#: pattern matching
                     switch phase {
@@ -79,5 +86,10 @@ struct CardView: View {
         .background(theme.surface)
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .shadow(radius: 2)
+        .task {
+            if item.displayImage == nil {
+                imageResolver.resolve(link: item.link)
+            }
+        }
     }
 }

@@ -20,29 +20,30 @@ struct NavigationDrawer: View {
                 .padding(.top, 32)
                 .padding(.bottom, 24)
 
-            // Primary nav items
-            ForEach(AppTab.allCases.filter { $0 != .settings }) { tab in
-                navItem(tab)
-            }
-
-            // Feed list divider
-            Rectangle()
-                .fill(theme.outlineVariant.opacity(0.3))
-                .frame(height: 1)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-
-            // Feeds label
-            Text("FEEDS")
-                .labelXSmall()
-                .foregroundColor(theme.onSurfaceVariant.opacity(0.5))
-                .tracking(2)
-                .padding(.horizontal, 24)
-                .padding(.bottom, 8)
-
-            // Scrollable feed list with categories
+            // Scrollable content: nav items + feed list
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 0) {
+                    // Primary nav items
+                    ForEach(AppTab.allCases.filter { $0 != .settings }) { tab in
+                        navItem(tab)
+                    }
+
+                    // Feed list divider
+                    Rectangle()
+                        .fill(theme.outlineVariant.opacity(0.3))
+                        .frame(height: 1)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+
+                    // Feeds label
+                    Text("FEEDS")
+                        .labelXSmall()
+                        .foregroundColor(theme.onSurfaceVariant.opacity(0.5))
+                        .tracking(2)
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 8)
+
+                    // Feed list with categories
                     ForEach(viewModel.menuItems) { menuItem in
                         switch menuItem {
                         case .single(let feed):
